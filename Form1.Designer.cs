@@ -111,11 +111,11 @@ namespace WindowsFormsApp1
             this.txtRutaDescarga = new System.Windows.Forms.TextBox();
             this.grpRdbtn = new System.Windows.Forms.GroupBox();
             this.tablegrpRdbtn = new System.Windows.Forms.TableLayoutPanel();
+            this.rbMigrarAmbos = new System.Windows.Forms.RadioButton();
+            this.rbMigrarBack = new System.Windows.Forms.RadioButton();
+            this.rbMigrarFront = new System.Windows.Forms.RadioButton();
             this.grpLapso = new System.Windows.Forms.GroupBox();
             this.flowPanelAnios = new System.Windows.Forms.FlowLayoutPanel();
-            this.rbMigrarFront = new System.Windows.Forms.RadioButton();
-            this.rbMigrarBack = new System.Windows.Forms.RadioButton();
-            this.rbMigrarAmbos = new System.Windows.Forms.RadioButton();
             this.chkTodos = new System.Windows.Forms.CheckBox();
             this.lblTotalRegistros = new System.Windows.Forms.Label();
             this.txtTotalRegistros = new System.Windows.Forms.TextBox();
@@ -575,7 +575,7 @@ namespace WindowsFormsApp1
             this.tablegrpRdbtn.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 87F));
             this.tablegrpRdbtn.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 98F));
             this.tablegrpRdbtn.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 87F));
-            this.tablegrpRdbtn.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 15F));
+            this.tablegrpRdbtn.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 119F));
             this.tablegrpRdbtn.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 200F));
             this.tablegrpRdbtn.Controls.Add(this.rbMigrarAmbos, 2, 0);
             this.tablegrpRdbtn.Controls.Add(this.rbMigrarBack, 0, 0);
@@ -587,6 +587,47 @@ namespace WindowsFormsApp1
             this.tablegrpRdbtn.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 8F));
             this.tablegrpRdbtn.Size = new System.Drawing.Size(391, 43);
             this.tablegrpRdbtn.TabIndex = 0;
+            // 
+            // rbMigrarAmbos
+            // 
+            this.rbMigrarAmbos.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.rbMigrarAmbos.AutoSize = true;
+            this.rbMigrarAmbos.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.rbMigrarAmbos.ForeColor = System.Drawing.Color.Black;
+            this.rbMigrarAmbos.Location = new System.Drawing.Point(194, 13);
+            this.rbMigrarAmbos.Name = "rbMigrarAmbos";
+            this.rbMigrarAmbos.Size = new System.Drawing.Size(68, 19);
+            this.rbMigrarAmbos.TabIndex = 5;
+            this.rbMigrarAmbos.Text = "AMBOS";
+            this.rbMigrarAmbos.UseVisualStyleBackColor = true;
+            // 
+            // rbMigrarBack
+            // 
+            this.rbMigrarBack.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.rbMigrarBack.AutoSize = true;
+            this.rbMigrarBack.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.rbMigrarBack.ForeColor = System.Drawing.Color.Black;
+            this.rbMigrarBack.Location = new System.Drawing.Point(5, 13);
+            this.rbMigrarBack.Name = "rbMigrarBack";
+            this.rbMigrarBack.Size = new System.Drawing.Size(76, 19);
+            this.rbMigrarBack.TabIndex = 4;
+            this.rbMigrarBack.Text = "BD BACK";
+            this.rbMigrarBack.UseVisualStyleBackColor = true;
+            // 
+            // rbMigrarFront
+            // 
+            this.rbMigrarFront.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.rbMigrarFront.AutoSize = true;
+            this.rbMigrarFront.Checked = true;
+            this.rbMigrarFront.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.rbMigrarFront.ForeColor = System.Drawing.Color.Black;
+            this.rbMigrarFront.Location = new System.Drawing.Point(94, 13);
+            this.rbMigrarFront.Name = "rbMigrarFront";
+            this.rbMigrarFront.Size = new System.Drawing.Size(84, 19);
+            this.rbMigrarFront.TabIndex = 3;
+            this.rbMigrarFront.TabStop = true;
+            this.rbMigrarFront.Text = "BD FRONT";
+            this.rbMigrarFront.UseVisualStyleBackColor = true;
             // 
             // grpLapso
             // 
@@ -614,47 +655,6 @@ namespace WindowsFormsApp1
             this.flowPanelAnios.Name = "flowPanelAnios";
             this.flowPanelAnios.Size = new System.Drawing.Size(814, 50);
             this.flowPanelAnios.TabIndex = 1;
-            // 
-            // rbMigrarFront
-            // 
-            this.rbMigrarFront.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.rbMigrarFront.AutoSize = true;
-            this.rbMigrarFront.Checked = true;
-            this.rbMigrarFront.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            this.rbMigrarFront.ForeColor = System.Drawing.Color.Black;
-            this.rbMigrarFront.Location = new System.Drawing.Point(94, 13);
-            this.rbMigrarFront.Name = "rbMigrarFront";
-            this.rbMigrarFront.Size = new System.Drawing.Size(84, 19);
-            this.rbMigrarFront.TabIndex = 3;
-            this.rbMigrarFront.TabStop = true;
-            this.rbMigrarFront.Text = "BD FRONT";
-            this.rbMigrarFront.UseVisualStyleBackColor = true;
-            // 
-            // rbMigrarBack
-            // 
-            this.rbMigrarBack.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.rbMigrarBack.AutoSize = true;
-            this.rbMigrarBack.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            this.rbMigrarBack.ForeColor = System.Drawing.Color.Black;
-            this.rbMigrarBack.Location = new System.Drawing.Point(5, 13);
-            this.rbMigrarBack.Name = "rbMigrarBack";
-            this.rbMigrarBack.Size = new System.Drawing.Size(76, 19);
-            this.rbMigrarBack.TabIndex = 4;
-            this.rbMigrarBack.Text = "BD BACK";
-            this.rbMigrarBack.UseVisualStyleBackColor = true;
-            // 
-            // rbMigrarAmbos
-            // 
-            this.rbMigrarAmbos.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.rbMigrarAmbos.AutoSize = true;
-            this.rbMigrarAmbos.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            this.rbMigrarAmbos.ForeColor = System.Drawing.Color.Black;
-            this.rbMigrarAmbos.Location = new System.Drawing.Point(194, 13);
-            this.rbMigrarAmbos.Name = "rbMigrarAmbos";
-            this.rbMigrarAmbos.Size = new System.Drawing.Size(68, 19);
-            this.rbMigrarAmbos.TabIndex = 5;
-            this.rbMigrarAmbos.Text = "AMBOS";
-            this.rbMigrarAmbos.UseVisualStyleBackColor = true;
             // 
             // chkTodos
             // 
@@ -716,9 +716,9 @@ namespace WindowsFormsApp1
             this.verificar_conexion_btn.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.verificar_conexion_btn.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 110F));
             this.verificar_conexion_btn.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 110F));
-            this.verificar_conexion_btn.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 110F));
-            this.verificar_conexion_btn.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 150F));
-            this.verificar_conexion_btn.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 200F));
+            this.verificar_conexion_btn.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 135F));
+            this.verificar_conexion_btn.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 156F));
+            this.verificar_conexion_btn.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 169F));
             this.verificar_conexion_btn.Controls.Add(this.btnverificar, 0, 0);
             this.verificar_conexion_btn.Controls.Add(this.btnGuardar, 4, 0);
             this.verificar_conexion_btn.Controls.Add(this.btnLimpiar, 5, 0);
@@ -753,7 +753,7 @@ namespace WindowsFormsApp1
             this.btnGuardar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnGuardar.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
             this.btnGuardar.ForeColor = System.Drawing.Color.White;
-            this.btnGuardar.Location = new System.Drawing.Point(487, 6);
+            this.btnGuardar.Location = new System.Drawing.Point(515, 6);
             this.btnGuardar.Name = "btnGuardar";
             this.btnGuardar.Size = new System.Drawing.Size(140, 58);
             this.btnGuardar.TabIndex = 0;
@@ -768,9 +768,9 @@ namespace WindowsFormsApp1
             this.btnLimpiar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnLimpiar.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.btnLimpiar.ForeColor = System.Drawing.Color.White;
-            this.btnLimpiar.Location = new System.Drawing.Point(635, 6);
+            this.btnLimpiar.Location = new System.Drawing.Point(669, 6);
             this.btnLimpiar.Name = "btnLimpiar";
-            this.btnLimpiar.Size = new System.Drawing.Size(194, 58);
+            this.btnLimpiar.Size = new System.Drawing.Size(157, 58);
             this.btnLimpiar.TabIndex = 1;
             this.btnLimpiar.Text = "🗑️ ELIMINAR DATA FORMULARIOS";
             this.btnLimpiar.UseVisualStyleBackColor = false;

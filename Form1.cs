@@ -22,8 +22,10 @@ namespace WindowsFormsApp1
         public string PasswordZeus { get; private set; }
         public string UsuarioFront { get; private set; }
         public string PasswordFront { get; private set; }
+        public string DatabaseFront { get; private set; }
         public string IpFront { get; private set; }
         public string UsuarioBack { get; private set; }
+        public string DatabaseBack { get; private set; }
         public string PasswordBack { get; private set; }
         public string IpBack { get; private set; }
         public string RutaDescarga { get; private set; }
@@ -40,6 +42,7 @@ namespace WindowsFormsApp1
             ConfigurarEventos();
             InicializarAnios();
             ConfigurarEstilos();
+            CargarDesdeConfigTxtSoloBasico();
         }
 
         private void ConfigurarEventos()
@@ -56,6 +59,11 @@ namespace WindowsFormsApp1
 
             // Evento Load del formulario
             this.Load += Form1_Load;
+        }
+
+        private void CargarConfig() 
+        { 
+        
         }
 
         private async Task<(bool Ok, string Mensaje)> VerificarConexionBackAsync(
@@ -110,6 +118,7 @@ namespace WindowsFormsApp1
             string ip = txtIpBack.Text.Trim();
             string usuario = txtUsuarioBack.Text.Trim();
             string password = txtPasswordBack.Text;
+            string base_datos =  txtBaseDatosBack.Text;
 
             if (string.IsNullOrWhiteSpace(ip) ||
                 string.IsNullOrWhiteSpace(usuario) ||
@@ -126,7 +135,7 @@ namespace WindowsFormsApp1
             try
             {
                 var (ok, mensaje) = await VerificarConexionBackAsync(
-                    ip, "TimbradoMasivo_Test", usuario, password, timeoutSeg: 8);
+                    ip, base_datos, usuario, password, timeoutSeg: 8);
 
                 MessageBox.Show(mensaje,
                     ok ? "Conexión Exitosa" : "Error de Conexión",
@@ -386,8 +395,13 @@ namespace WindowsFormsApp1
                 return false;
             }
 
+            // *** NUEVO: validar tipo de migración + campos coherentes
+            if (!ValidarSeleccionYCampos())
+                return false;
+
             return true;
         }
+
 
         private void GuardarValores()
         {
@@ -399,6 +413,8 @@ namespace WindowsFormsApp1
             PasswordBack = txtPasswordBack.Text;
             IpBack = txtIpBack.Text.Trim();
             RutaDescarga = txtRutaDescarga.Text.Trim();
+            DatabaseBack = txtBaseDatosBack.Text.Trim();
+            DatabaseFront =  txtBaseDatosFront.Text.Trim();
         }
 
         private string GenerarResumen()
@@ -408,11 +424,12 @@ namespace WindowsFormsApp1
 
             return $"RESUMEN DE MIGRACIÓN:\n" +
                    $"• NIT: {NIT}\n" +
-                   $"• Usuario Zeus: {UsuarioZeus}\n" +
+
                    $"• Usuario BD Front: {(string.IsNullOrEmpty(UsuarioFront) ? "No especificado" : UsuarioFront)}\n" +
-                   $"• IP Front: {(string.IsNullOrEmpty(IpFront) ? "No especificado" : IpFront)}\n" +
+                   $"• IP Front: {(string.IsNullOrEmpty(IpFront) ? "No especificado" : IpFront)}\n\n" +
                    $"• Usuario BD Back: {(string.IsNullOrEmpty(UsuarioBack) ? "No especificado" : UsuarioBack)}\n" +
-                   $"• IP Back: {(string.IsNullOrEmpty(IpBack) ? "No especificado" : IpBack)}\n" +
+                   $"• IP Back: {(string.IsNullOrEmpty(IpBack) ? "No especificado" : IpBack)}\n\n" +
+
                    $"• Lapso: {lapso}\n" +
                    $"• Ruta: {RutaDescarga}\n" +
                    $"• Registros estimados: {(TotalRegistrosEstimados == -1 ? "Todos" : TotalRegistrosEstimados.ToString("N0"))}";
@@ -439,16 +456,20 @@ namespace WindowsFormsApp1
             string ip = txtIpBack.Text.Trim();
             string usuario = txtUsuarioBack.Text.Trim();
             string password = txtPasswordBack.Text;
+            string bdname_back = txtBaseDatosBack.Text.Trim();
 
             string ip_front = txtIpFront.Text.Trim();
             string usuario_front = txtUsuarioFront.Text.Trim();
             string password_front = txtPasswordFront.Text;
+            string bdname_front = txtBaseDatosFront.Text.Trim();
+
 
             if ((string.IsNullOrWhiteSpace(ip) && string.IsNullOrWhiteSpace(ip_front)) ||
                 (string.IsNullOrWhiteSpace(usuario) && string.IsNullOrWhiteSpace(usuario_front)) ||
-                (string.IsNullOrWhiteSpace(password) && string.IsNullOrWhiteSpace(password_front)))
+                (string.IsNullOrWhiteSpace(password) && string.IsNullOrWhiteSpace(password_front)) ||
+                (string.IsNullOrWhiteSpace(bdname_back) && string.IsNullOrWhiteSpace(bdname_front)))
             {
-                MessageBox.Show("Debe ingresar IP, usuario y contraseña \n DE AL MENOS 1 BASE DE DATOS.",
+                MessageBox.Show("Debe ingresar IP, Nombre Base de datos, usuario y contraseña \n DE AL MENOS 1 BASE DE DATOS.",
                     "Datos incompletos", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -458,10 +479,10 @@ namespace WindowsFormsApp1
             try
             {
                 var (ok, mensaje) = await VerificarConexionBackAsync(
-                    ip, "TimbradoMasivo_Test", usuario, password, timeoutSeg: 8);
+                    ip, bdname_back, usuario, password, timeoutSeg: 8);
 
                 var (ok2, mensaje2) = await VerificarConexionBackAsync(
-                    ip_front, "TimbradoMasivo_Test", usuario_front, password_front, timeoutSeg: 8);
+                    ip_front, bdname_front, usuario_front, password_front, timeoutSeg: 8);
 
                 string respuestasPeticiones = $"● Conexion Back : {mensaje} \n\n" + $"● Conexion Front : {mensaje2}";
 
@@ -650,7 +671,7 @@ namespace WindowsFormsApp1
 
             try
             {
-                string connectionString = $"Server={IpFront};Database=FrontDB;User Id={UsuarioFront};Password={PasswordFront};Connection Timeout=30;";
+                string connectionString = $"Server={IpFront};Database={DatabaseFront};User Id={UsuarioFront};Password={PasswordFront};Connection Timeout=30;";
 
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
@@ -700,7 +721,7 @@ namespace WindowsFormsApp1
 
             try
             {
-                string connectionString = $"Server={IpBack};Database=BackDB;User Id={UsuarioBack};Password={PasswordBack};Connection Timeout=30;";
+                string connectionString = $"Server={IpBack};Database={DatabaseBack};User Id={UsuarioBack};Password={PasswordBack};Connection Timeout=30;";
 
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
@@ -742,6 +763,15 @@ namespace WindowsFormsApp1
             }
 
             return transacciones;
+        }
+
+        private static string San(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return string.Empty;
+            return s.Replace('|', '/')
+                    .Replace("\r", " ")
+                    .Replace("\n", " ")
+                    .Trim();
         }
 
         private string GenerarArchivoTransacciones(string rutaArchivo, int anio,
@@ -832,6 +862,8 @@ namespace WindowsFormsApp1
                 throw new Exception($"Error enviando archivos a la API: {ex.Message}");
             }
         }
+
+
 
         private async Task EnviarArchivoIndividual(HttpClient client, string rutaArchivo)
         {
@@ -946,7 +978,175 @@ namespace WindowsFormsApp1
                 e.Handled = true;
             }
         }
+
+        private enum TipoMigracion { Front, Back, Ambos }
+
+        // Qué eligió el usuario en UI
+        private TipoMigracion GetTipoSeleccionado()
+        {
+            if (rbMigrarAmbos.Checked) return TipoMigracion.Ambos;
+            if (rbMigrarFront.Checked) return TipoMigracion.Front;
+            return TipoMigracion.Back;
+        }
+
+        // ¿Están completos los mínimos para FRONT/BACK?
+        private bool CamposFrontCompletos() =>
+            !string.IsNullOrWhiteSpace(txtUsuarioFront.Text) &&
+            !string.IsNullOrWhiteSpace(txtPasswordFront.Text) &&
+            !string.IsNullOrWhiteSpace(txtIpFront.Text) &&
+            !string.IsNullOrWhiteSpace(txtBaseDatosFront.Text);
+
+        private bool CamposBackCompletos() =>
+            !string.IsNullOrWhiteSpace(txtUsuarioBack.Text) &&
+            !string.IsNullOrWhiteSpace(txtPasswordBack.Text) &&
+            !string.IsNullOrWhiteSpace(txtIpBack.Text) &&
+            !string.IsNullOrWhiteSpace(txtBaseDatosBack.Text);
+
+        // Normaliza "ip:puerto" -> "ip,puerto" (SqlClient)
+        private string NormalizarServidorSql(string host) =>
+            string.IsNullOrWhiteSpace(host) ? host :
+            (host.Contains(":") && !host.Contains(",")) ? host.Replace(":", ",") : host;
+        private bool ValidarSeleccionYCampos()
+        {
+            var tipo = GetTipoSeleccionado();
+            bool frontOK = CamposFrontCompletos();
+            bool backOK = CamposBackCompletos();
+
+            // Reglas por tipo
+            if (tipo == TipoMigracion.Front)
+            {
+                if (!frontOK)
+                {
+                    MessageBox.Show("Seleccionaste migrar SOLO FRONT, pero faltan campos de FRONT (IP, Nombre de la base de datos, usuario o contraseña).",
+                        "Faltan datos FRONT", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return false;
+                }
+
+                // Aviso si también llenó BACK
+                if (backOK)
+                {
+                    var r = MessageBox.Show(
+                        "Elegiste migrar SOLO FRONT, pero detecté credenciales de BACK llenas.\n" +
+                        "¿Deseas continuar migrando SOLO FRONT? (Se ignorará BACK).",
+                        "Campos adicionales detectados", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    if (r == DialogResult.No) return false;
+                }
+            }
+            else if (tipo == TipoMigracion.Back)
+            {
+                if (!backOK)
+                {
+                    MessageBox.Show("Seleccionaste migrar SOLO BACK, pero faltan campos de BACK (IP, usuario o contraseña).",
+                        "Faltan datos BACK", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return false;
+                }
+
+                if (frontOK)
+                {
+                    var r = MessageBox.Show(
+                        "Elegiste migrar SOLO BACK, pero detecté credenciales de FRONT llenas.\n" +
+                        "¿Deseas continuar migrando SOLO BACK? (Se ignorará FRONT).",
+                        "Campos adicionales detectados", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    if (r == DialogResult.No) return false;
+                }
+            }
+            else // Ambos
+            {
+                if (!frontOK || !backOK)
+                {
+                    MessageBox.Show("Seleccionaste migrar AMBOS, pero faltan campos:\n" +
+                                    (frontOK ? "" : "• FRONT: IP, usuario o contraseña.\n") +
+                                    (backOK ? "" : "• BACK: IP, usuario o contraseña."),
+                        "Faltan datos para AMBOS", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        public bool CargarDesdeConfigTxtSoloBasico(string ruta = null)
+        {
+            try
+            {
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                string configPath = ruta ?? Path.Combine(baseDir, "config.txt");
+                if (!File.Exists(configPath))
+                    return false;
+
+                var permitidas = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    "NIT", "RutaDescarga",
+                    "UsuarioFront", "PasswordFront", "IpFront", "BaseDatosFront",
+                    "UsuarioBack",  "PasswordBack",  "IpBack",  "BaseDatosBack"
+                };
+
+                var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var raw in File.ReadAllLines(configPath, Encoding.UTF8))
+                {
+                    string line = raw.Trim();
+                    if (string.IsNullOrWhiteSpace(line)) continue;
+                    if (line.StartsWith("#") || line.StartsWith("//") || line.StartsWith(";")) continue;
+
+                    int eq = line.IndexOf('=');
+                    if (eq <= 0) continue;
+
+                    string key = line.Substring(0, eq).Trim();
+                    string value = line.Substring(eq + 1).Trim();
+
+                    if (!permitidas.Contains(key)) continue; // ignorar claves no deseadas
+
+                    // Quita comillas opcionales
+                    if (value.Length >= 2 && value.StartsWith("\"") && value.EndsWith("\""))
+                        value = value.Substring(1, value.Length - 2);
+
+                    // Expande ${ENV_VAR}
+                    if (value.StartsWith("${") && value.EndsWith("}"))
+                    {
+                        string env = value.Substring(2, value.Length - 3);
+                        string ev = Environment.GetEnvironmentVariable(env);
+                        if (!string.IsNullOrEmpty(ev)) value = ev;
+                    }
+
+                    map[key] = value;
+                }
+
+                if (map.Count == 0) return false;
+
+                // --- Asignar a UI ---
+                if (map.TryGetValue("NIT", out var s)) txtNit.Text = s;
+
+                if (map.TryGetValue("RutaDescarga", out s) && !string.IsNullOrWhiteSpace(s))
+                {
+                    txtRutaDescarga.Text = s;
+                    RutaDescarga = s;
+                }
+
+                if (map.TryGetValue("UsuarioFront", out s)) txtUsuarioFront.Text = s;
+                if (map.TryGetValue("PasswordFront", out s)) txtPasswordFront.Text = s;
+                if (map.TryGetValue("IpFront", out s)) txtIpFront.Text = s;     // opcional: s = NormalizarServidorSql(s);
+                if (map.TryGetValue("BaseDatosFront", out s)) txtBaseDatosFront.Text = s;
+
+                if (map.TryGetValue("UsuarioBack", out s)) txtUsuarioBack.Text = s;
+                if (map.TryGetValue("PasswordBack", out s)) txtPasswordBack.Text = s;
+                if (map.TryGetValue("IpBack", out s)) txtIpBack.Text = s;       // opcional: s = NormalizarServidorSql(s);
+                if (map.TryGetValue("BaseDatosBack", out s)) txtBaseDatosBack.Text = s;
+
+                // Refresca variables derivadas
+                GuardarValores();
+                ActualizarTotalRegistros();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error leyendo config.txt:\n{ex.Message}",
+                    "Config", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+        }
     }
+
+    
 
     // Clase auxiliar para manejar datos de transacciones
     public class TransaccionData
