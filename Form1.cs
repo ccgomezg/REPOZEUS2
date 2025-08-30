@@ -239,7 +239,7 @@ namespace WindowsFormsApp1
         {
             // Configuración inicial
             txtTotalRegistros.Text = "0 registros";
-            txtRutaDescarga.Text = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            txtRutaDescarga.Text = AppDomain.CurrentDomain.BaseDirectory;
             RutaDescarga = txtRutaDescarga.Text;
 
             // Mostrar año actual por defecto
@@ -520,7 +520,7 @@ namespace WindowsFormsApp1
             txtUsuarioBack.Clear();
             txtPasswordBack.Clear();
             txtIpBack.Clear();
-            txtRutaDescarga.Text = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            txtRutaDescarga.Text = AppDomain.CurrentDomain.BaseDirectory;
 
             // Desmarcar todos los checkboxes
             chkTodos.Checked = false;
@@ -639,17 +639,20 @@ namespace WindowsFormsApp1
         {
             List<TransaccionData> transaccionesFront = new List<TransaccionData>();
             List<TransaccionData> transaccionesBack = new List<TransaccionData>();
+            string proceso = string.Empty;
 
             // Consultar BD Front si hay datos de conexión
             if (!string.IsNullOrEmpty(UsuarioFront) && !string.IsNullOrEmpty(IpFront))
             {
                 transaccionesFront = await ConsultarBaseFront(anio);
+                proceso = "FR_";
             }
 
             // Consultar BD Back si hay datos de conexión
             if (!string.IsNullOrEmpty(UsuarioBack) && !string.IsNullOrEmpty(IpBack))
             {
                 transaccionesBack = await ConsultarBaseBack(anio);
+                proceso = "BA_";
             }
 
             // Si no hay transacciones, retornar null
@@ -659,7 +662,7 @@ namespace WindowsFormsApp1
             }
 
             // Generar archivo para el año
-            string nombreArchivo = $"{NIT}_{anio}.txt";
+            string nombreArchivo = $"{proceso}{NIT}_{anio}.txt";
             string rutaCompleta = Path.Combine(directorioDestino, nombreArchivo);
 
             return GenerarArchivoTransacciones(rutaCompleta, anio, transaccionesFront, transaccionesBack);
@@ -768,68 +771,37 @@ namespace WindowsFormsApp1
         private static string San(string s)
         {
             if (string.IsNullOrEmpty(s)) return string.Empty;
-            return s.Replace('|', '/')
-                    .Replace("\r", " ")
-                    .Replace("\n", " ")
+            return s.Replace("\r", "")
+                    .Replace("\n", "")
+                    .Replace("\t", "")
                     .Trim();
         }
 
         private string GenerarArchivoTransacciones(string rutaArchivo, int anio,
-            List<TransaccionData> transaccionesFront, List<TransaccionData> transaccionesBack)
+    List<TransaccionData> transaccionesFront, List<TransaccionData> transaccionesBack)
         {
             try
             {
-                using (StreamWriter writer = new StreamWriter(rutaArchivo, false, Encoding.UTF8))
+                // Une ambas listas y ordena por fecha
+                var todas = new List<TransaccionData>((transaccionesFront ?? new List<TransaccionData>()));
+                if (transaccionesBack != null) todas.AddRange(transaccionesBack);
+                var ordenadas = todas.OrderBy(t => t.FechaHora);
+
+                using (var writer = new StreamWriter(rutaArchivo, false, Encoding.UTF8))
                 {
-                    // Encabezado del archivo
-                    writer.WriteLine("=".PadRight(80, '='));
-                    writer.WriteLine($"MIGRACION MASIVA DE DATOS - AÑO {anio}");
-                    writer.WriteLine($"NIT: {NIT}");
-                    writer.WriteLine($"FECHA GENERACION: {DateTime.Now:dd/MM/yyyy HH:mm:ss}");
-                    writer.WriteLine($"TOTAL TRANSACCIONES FRONT: {transaccionesFront.Count}");
-                    writer.WriteLine($"TOTAL TRANSACCIONES BACK: {transaccionesBack.Count}");
-                    writer.WriteLine("=".PadRight(80, '='));
-                    writer.WriteLine();
+                    // Encabezado tabular
+                    writer.WriteLine("modulo|ldf|parametros|fecha");
 
-                    // Escribir transacciones FRONT
-                    if (transaccionesFront.Count > 0)
+                    // Filas
+                    foreach (var t in ordenadas)
                     {
-                        writer.WriteLine("[TRANSACCIONES FRONT]");
-                        writer.WriteLine("-".PadRight(50, '-'));
-
-                        foreach (var transaccion in transaccionesFront)
-                        {
-                            writer.WriteLine($"MODULO: {transaccion.Modulo}");
-                            writer.WriteLine($"MENSAJE: {transaccion.Mensaje}");
-                            writer.WriteLine($"PARAMETROS: {transaccion.Parametros}");
-                            writer.WriteLine($"FECHA: {transaccion.FechaHora:dd/MM/yyyy HH:mm:ss}");
-                            writer.WriteLine($"ORIGEN: {transaccion.Origen}");
-                            writer.WriteLine();
-                        }
-                        writer.WriteLine();
+                        writer.WriteLine(
+                            $"{San(t.Modulo)}|" +
+                            $"{San(t.Mensaje)}|" +
+                            $"{San(t.Parametros)}|" +
+                            $"{t.FechaHora:yyyy-MM-dd HH:mm:ss}"
+                        );
                     }
-
-                    // Escribir transacciones BACK
-                    if (transaccionesBack.Count > 0)
-                    {
-                        writer.WriteLine("[TRANSACCIONES BACK]");
-                        writer.WriteLine("-".PadRight(50, '-'));
-
-                        foreach (var transaccion in transaccionesBack)
-                        {
-                            writer.WriteLine($"MODULO: {transaccion.Modulo}");
-                            writer.WriteLine($"MENSAJE: {transaccion.Mensaje}");
-                            writer.WriteLine($"PARAMETROS: {transaccion.Parametros}");
-                            writer.WriteLine($"FECHA: {transaccion.FechaHora:dd/MM/yyyy HH:mm:ss}");
-                            writer.WriteLine($"ORIGEN: {transaccion.Origen}");
-                            writer.WriteLine();
-                        }
-                    }
-
-                    // Pie de archivo
-                    writer.WriteLine("=".PadRight(80, '='));
-                    writer.WriteLine($"FIN DEL ARCHIVO - TOTAL REGISTROS: {transaccionesFront.Count + transaccionesBack.Count}");
-                    writer.WriteLine("=".PadRight(80, '='));
                 }
 
                 return rutaArchivo;
