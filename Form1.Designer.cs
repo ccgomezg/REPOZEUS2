@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using System.Windows.Forms;
+using WindowsFormsApp1.Helpers;
 
 namespace WindowsFormsApp1
 {
@@ -233,7 +234,6 @@ namespace WindowsFormsApp1
             this.txtNit.Location = new System.Drawing.Point(106, 3);
             this.txtNit.Name = "txtNit";
             this.txtNit.Size = new System.Drawing.Size(224, 34);
-            txtNit.KeyPress += txtNit_KeyPress;
             this.txtNit.TabIndex = 1;
             // 
             // grpFront
