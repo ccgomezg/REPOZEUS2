@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -49,6 +50,7 @@ namespace WindowsFormsApp1
             ConfigurarEstilos();
             CargarConfiguracionInicial();
             FormHelper.ConfigurarFormularioInicial(this, progressBar, txtTotalRegistros, txtRutaDescarga);
+
         }
 
         private void InicializarEstado()
@@ -135,6 +137,7 @@ namespace WindowsFormsApp1
 
             try
             {
+                GuardarConfiguracion();
                 FormHelper.ActualizarConfigDesdeFormulario(_config, chkTodos, _checkboxAnios,
                     txtNit, txtRutaDescarga, txtUsuarioFront, txtPasswordFront, txtIpFront, txtBaseDatosFront,
                     txtUsuarioBack, txtPasswordBack, txtIpBack, txtBaseDatosBack);
@@ -190,6 +193,10 @@ namespace WindowsFormsApp1
 
         private async Task ProcesarMigracionAsync()
         {
+            btnGuardar.Enabled = false;
+            btnGuardar.Text = "Migrando...";
+
+            GuardarConfiguracion();
             FormHelper.ActualizarConfigDesdeFormulario(_config, chkTodos, _checkboxAnios,
                 txtNit, txtRutaDescarga, txtUsuarioFront, txtPasswordFront, txtIpFront, txtBaseDatosFront,
                 txtUsuarioBack, txtPasswordBack, txtIpBack, txtBaseDatosBack);
@@ -198,7 +205,10 @@ namespace WindowsFormsApp1
                 return;
 
             await EjecutarMigracionAsync();
-        }
+
+            btnGuardar.Enabled = true;
+            btnGuardar.Text = "MIGRAR";
+        }   
 
         private bool ValidarYConfirmarMigracion()
         {
@@ -231,8 +241,9 @@ namespace WindowsFormsApp1
 
             try
             {
+                TipoMigracion tipo = ObtenerTipoMigracionSeleccionado();
                 var progreso = new Progress<int>(valor => progressBar.Value = valor);
-                var resultado = await _migracionService.EjecutarMigracionAsync(_config, progreso);
+                var resultado = await _migracionService.EjecutarMigracionAsync(_config, progreso, tipo);
 
                 var mensaje = FormHelper.GenerarMensajeResultado(resultado);
                 var icono = resultado.Exitoso ? MessageBoxIcon.Information : MessageBoxIcon.Warning;
@@ -283,17 +294,58 @@ namespace WindowsFormsApp1
         {
             if (rbMigrarAmbos.Checked) return TipoMigracion.Ambos;
             if (rbMigrarFront.Checked) return TipoMigracion.Front;
-            return TipoMigracion.Back;
+            if (rbMigrarBack.Checked) return TipoMigracion.Back;
+            return TipoMigracion.NULL;
         }
         #endregion
 
         #region Métodos heredados del diseñador
-        private void Form1_Load_1(object sender, EventArgs e) { }
+        private void Form1_Load_1(object sender, EventArgs e) {
+            this.ActiveControl = null;
+        }
         private void grpFront_Enter(object sender, EventArgs e) { }
         private void chkTodos_CheckedChanged_1(object sender, EventArgs e) { }
         private void button1_Click(object sender, EventArgs e) { }
         private void txtIpFront_TextChanged(object sender, EventArgs e) { }
+
         #endregion
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void GuardarConfiguracion()
+        {
+            try
+            {
+                string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.txt");
+
+                // Crear el contenido del archivo de configuración
+                var lineasConfig = new List<string>
+        {
+            $"NIT={txtNit.Text.Trim()}",
+            $"RutaDescarga={txtRutaDescarga.Text.Trim()}",
+            "# FRONT",
+            $"UsuarioFront={txtUsuarioFront.Text.Trim()}",
+            $"PasswordFront={txtPasswordFront.Text.Trim()}",
+            $"IpFront={txtIpFront.Text.Trim()}",
+            $"BaseDatosFront={txtBaseDatosFront.Text.Trim()}",
+            "# BACK",
+            $"UsuarioBack={txtUsuarioBack.Text.Trim()}",
+            $"PasswordBack={txtPasswordBack.Text.Trim()}",
+            $"IpBack={txtIpBack.Text.Trim()}",
+            $"BaseDatosBack={txtBaseDatosBack.Text.Trim()}"
+        };
+
+                // Escribir todas las líneas al archivo (sobrescribir si existe, crear si no existe)
+                File.WriteAllLines(configPath, lineasConfig);
+            }
+            catch (Exception ex)
+            {
+                UIHelper.MostrarError($"Error al guardar la configuración: {ex.Message}", "Error al Guardar");
+            }
+        }
     }
 }
 

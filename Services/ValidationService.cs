@@ -56,7 +56,7 @@ namespace WindowsFormsApp1.Services
             return resultado;
         }
 
-        private ValidationResult ValidarTipoMigracion(MigracionConfig config, TipoMigracion tipo)
+        private ValidationResult ValidarTipoMigracion(MigracionConfig config, TipoMigracion tipo = TipoMigracion.NULL)
         {
             var resultado = new ValidationResult();
             bool frontCompleto = config.DatabaseFront.EstaCompleto();
@@ -64,7 +64,12 @@ namespace WindowsFormsApp1.Services
 
             switch (tipo)
             {
+                case TipoMigracion.NULL:
+                        resultado.AgregarError("Seleccione un TIPO DE MIGRACÓN");
+                        return resultado;
+
                 case TipoMigracion.Front:
+                    
                     if (!frontCompleto)
                     {
                         resultado.AgregarError("Para migrar FRONT, debe completar todos los campos de la base de datos Front (IP, Base de datos, Usuario, Contraseña)");

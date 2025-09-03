@@ -1,0 +1,2 @@
+﻿03/09/2025 16:05:47
+Error procesando año 2025: Login failed for user 'a'.

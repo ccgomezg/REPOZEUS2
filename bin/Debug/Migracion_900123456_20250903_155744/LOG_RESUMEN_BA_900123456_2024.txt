@@ -1,0 +1,5 @@
+﻿03/09/2025 15:58:02
+Año 2024 BACK procesado exitosamente
+Total registros: 155
+Archivo: BA_900123456_2024.txt
+Tamaño: 149 KB

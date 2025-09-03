@@ -11,7 +11,7 @@ namespace WindowsFormsApp1.Services
 {
     public interface IMigracionService
     {
-        Task<MigracionResult> EjecutarMigracionAsync(MigracionConfig config, IProgress<int> progreso);
+        Task<MigracionResult> EjecutarMigracionAsync(MigracionConfig config, IProgress<int> progreso, TipoMigracion tMigracion);
     }
 
     public class MigracionService : IMigracionService
@@ -30,7 +30,7 @@ namespace WindowsFormsApp1.Services
             _apiService = apiService;
         }
 
-        public async Task<MigracionResult> EjecutarMigracionAsync(MigracionConfig config, IProgress<int> progreso)
+        public async Task<MigracionResult> EjecutarMigracionAsync(MigracionConfig config, IProgress<int> progreso, TipoMigracion t)
         {
             if (config == null)
                 throw new ArgumentNullException(nameof(config));
@@ -66,7 +66,7 @@ namespace WindowsFormsApp1.Services
                 }
 
                 // Determinar tipo de migración desde la config
-                var tipoMigracion = DeterminarTipoMigracion(config);
+                var tipoMigracion = DeterminarTipoMigracion(config, t);
                 progreso?.Report(20);
 
                 // Procesar cada año con streaming optimizado
@@ -156,19 +156,15 @@ namespace WindowsFormsApp1.Services
             }
         }
 
-        private TipoMigracion DeterminarTipoMigracion(MigracionConfig config)
+        private TipoMigracion DeterminarTipoMigracion(MigracionConfig config, TipoMigracion tipoMigracion)
         {
             bool frontCompleto = config.DatabaseFront.EstaCompleto();
             bool backCompleto = config.DatabaseBack.EstaCompleto();
 
-            if (frontCompleto && backCompleto)
-                return TipoMigracion.Ambos;
-            else if (frontCompleto)
-                return TipoMigracion.Front;
-            else if (backCompleto)
-                return TipoMigracion.Back;
-            else
+            if (tipoMigracion == TipoMigracion.NULL)
                 throw new InvalidOperationException("No hay configuración válida para ninguna base de datos");
+
+            return tipoMigracion;
         }
 
         private async Task<List<string>> ProcesarAnioSegunTipoAsync(

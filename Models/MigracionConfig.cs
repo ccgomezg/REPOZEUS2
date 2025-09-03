@@ -59,6 +59,7 @@ namespace WindowsFormsApp1.Models
     {
         Front,
         Back,
-        Ambos
+        Ambos,
+        NULL
     }
 }
