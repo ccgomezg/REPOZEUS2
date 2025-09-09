@@ -1,12 +1,26 @@
+﻿# Configuración de Migración
 NIT=900123456
 RutaDescarga=E:\DV-CCGG\Zeus\Source\Repos\WindowsFormsApp1\WindowsFormsApp1\bin\Debug\
-# FRONT
+
+# Base de datos Front
 UsuarioFront=jcifuentes
 PasswordFront=62].MJ<6YDm*5WU1Z]p
 IpFront=zeusprudb01.siesacloud.com,49876
 BaseDatosFront=Paisar_Zeus_Prueba
-# BACK
-UsuarioBack=jcifuentes
-PasswordBack=62].MJ<6YDm*5WU1Z]p
-IpBack=zeusprudb01.siesacloud.com,49876
-BaseDatosBack=Paisar_Contabilidad_Prueba
+
+# Base de datos Back
+UsuarioBack=Cnktsde01
+PasswordBack=g1$98*W:/uBd3fLosm
+IpBack=10.10.22.25
+BaseDatosBack=claro_connekta_qa
+
+# Select Técnicos
+# SELECT_BACK={"modulo":"", "ldf":"","parametros_Adicionales":"", "fecha":"fecha_prueba", "nombre_de_tabla_Sql":""}
+# SELECT_FRONT={"modulo":"", "ldf":"","parametros_Adicionales":"", "fecha":"", "nombre_de_tabla_Sql":""}
+
+#Sp Config
+SpBackEjecutado=false
+SpNameBack =SpFacturaElectronica_MigracionFacturaCol_To_PTSIESA_Contabilidad
+
+SpFrontEjecutado=false
+SpNameFront =SpFacturaElectronica_MigracionFacturaCol_To_PTSIESA_Contabilidad

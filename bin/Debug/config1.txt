@@ -1,0 +1,26 @@
+﻿# Configuración de Migración
+NIT=1111
+RutaDescarga=E:\DV-CCGG\Zeus\Source\Repos\WindowsFormsApp1\WindowsFormsApp1\bin\Debug\
+
+# Base de datos Front
+UsuarioFront=
+PasswordFront=
+IpFront=
+BaseDatosFront=
+
+# Base de datos Back
+UsuarioBack=111
+PasswordBack=111
+IpBack=111
+BaseDatosBack=1111
+
+# Select Técnicos
+# SELECT_BACK={"modulo":"", "ldf":"","parametros_Adicionales":"", "fecha":"", "nombre_de_tabla_Sql":""}
+# SELECT_FRONT={"modulo":"", "ldf":"","parametros_Adicionales":"", "fecha":"", "nombre_de_tabla_Sql":""}
+
+#Sp Config
+SpBackEjecutado="true"
+SpNameBack =SpFacturaElectronica_MigracionFacturaCol_To_PTSIESA_Contabilidad
+
+SpFrontEjecutado=true
+SpNameFront =SpFacturaElectronica_MigracionFacturaCol_To_PTSIESA_Contabilidad

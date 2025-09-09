@@ -78,7 +78,7 @@ namespace WindowsFormsApp1.Services
 
                     if (backCompleto)
                     {
-                        resultado.AgregarAdvertencia("Seleccionó migrar solo FRONT, pero hay credenciales de BACK completas. Se ignorarán los datos de BACK.");
+                        resultado.AgregarAdvertencia("Seleccionó migrar solo FRONT.\n\n * Se ignorarán los datos de BACK.");
                     }
                     break;
 
@@ -91,7 +91,7 @@ namespace WindowsFormsApp1.Services
 
                     if (frontCompleto)
                     {
-                        resultado.AgregarAdvertencia("Seleccionó migrar solo BACK, pero hay credenciales de FRONT completas. Se ignorarán los datos de FRONT.");
+                        resultado.AgregarAdvertencia("Seleccionó migrar solo BACK \n\n * Se ignorarán los datos de FRONT.");
                     }
                     break;
 

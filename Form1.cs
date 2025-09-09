@@ -17,6 +17,7 @@ namespace WindowsFormsApp1
         private IConfigService _configService;
         private IDatabaseService _databaseService;
         private IMigracionService _migracionService;
+        private IFileService _fileService;
 
         private MigracionConfig _config;
         private CheckBox[] _checkboxAnios;
@@ -36,10 +37,10 @@ namespace WindowsFormsApp1
             _validationService = new ValidationService();
             _configService = new ConfigService();
             _databaseService = new DatabaseService();
-            
-            var fileService = new FileService();
-            var apiService = new ApiService(fileService);
-            _migracionService = new MigracionService(_databaseService, fileService, apiService);
+
+            _fileService = new FileService();
+            var apiService = new ApiService(_fileService);
+            _migracionService = new MigracionService(_databaseService, _fileService, apiService);
         }
 
         private void InicializarFormulario()
@@ -137,10 +138,12 @@ namespace WindowsFormsApp1
 
             try
             {
-                GuardarConfiguracion();
                 FormHelper.ActualizarConfigDesdeFormulario(_config, chkTodos, _checkboxAnios,
                     txtNit, txtRutaDescarga, txtUsuarioFront, txtPasswordFront, txtIpFront, txtBaseDatosFront,
                     txtUsuarioBack, txtPasswordBack, txtIpBack, txtBaseDatosBack);
+
+                string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.txt");
+                _configService.GuardarConfiguracion(configPath, _config);
 
                 var resultados = await ObtenerResultadosVerificacion();
                 MostrarResultadosVerificacion(resultados);
@@ -191,24 +194,46 @@ namespace WindowsFormsApp1
             UIHelper.MostrarInformacion(mensaje, "Resultado de Verificación");
         }
 
+        private bool _enMigracion = false;
+
         private async Task ProcesarMigracionAsync()
         {
-            btnGuardar.Enabled = false;
-            btnGuardar.Text = "Migrando...";
+            if (_enMigracion) return; 
+            _enMigracion = true;
 
-            GuardarConfiguracion();
-            FormHelper.ActualizarConfigDesdeFormulario(_config, chkTodos, _checkboxAnios,
-                txtNit, txtRutaDescarga, txtUsuarioFront, txtPasswordFront, txtIpFront, txtBaseDatosFront,
-                txtUsuarioBack, txtPasswordBack, txtIpBack, txtBaseDatosBack);
+            var oldText = btnGuardar.Text;
+            try
+            {
 
-            if (!ValidarYConfirmarMigracion())
-                return;
+                btnGuardar.Enabled = false;
+                btnGuardar.Text = "Migrando...";
 
-            await EjecutarMigracionAsync();
+                FormHelper.ActualizarConfigDesdeFormulario(
+                    _config, chkTodos, _checkboxAnios,
+                    txtNit, txtRutaDescarga, txtUsuarioFront, txtPasswordFront, txtIpFront, txtBaseDatosFront,
+                    txtUsuarioBack, txtPasswordBack, txtIpBack, txtBaseDatosBack);
 
-            btnGuardar.Enabled = true;
-            btnGuardar.Text = "MIGRAR";
-        }   
+                string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.txt");
+                _configService.GuardarConfiguracion(configPath, _config);
+
+
+                if (!ValidarYConfirmarMigracion())
+                    return;
+
+                await EjecutarMigracionAsync(); 
+            }
+            catch (Exception ex)
+            {
+                UIHelper.MostrarError($"Error durante la migración:\n\n{ex.Message}", "Error de Proceso");
+            }
+            finally
+            {
+                btnGuardar.Enabled = true;
+                btnGuardar.Text = "MIGRAR";
+                progressBar.Visible = false; 
+                _enMigracion = false;
+            }
+        }
 
         private bool ValidarYConfirmarMigracion()
         {
@@ -241,12 +266,28 @@ namespace WindowsFormsApp1
 
             try
             {
-                TipoMigracion tipo = ObtenerTipoMigracionSeleccionado();
                 var progreso = new Progress<int>(valor => progressBar.Value = valor);
-                var resultado = await _migracionService.EjecutarMigracionAsync(_config, progreso, tipo);
+                string mensaje = "";
+                MessageBoxIcon icono = MessageBoxIcon.Question;
 
-                var mensaje = FormHelper.GenerarMensajeResultado(resultado);
-                var icono = resultado.Exitoso ? MessageBoxIcon.Information : MessageBoxIcon.Warning;
+                string ruta = _fileService.CrearDirectorioMigracion(_config.RutaDescarga, _config.NIT);
+
+                TipoMigracion tipo = ObtenerTipoMigracionSeleccionado();
+                if(tipo == TipoMigracion.Ambos)
+                {
+                    var resultadoBack = await _migracionService.EjecutarMigracionAsync(_config, progreso, TipoMigracion.Back, ruta);
+                    var resultadoFront = await _migracionService.EjecutarMigracionAsync(_config, progreso, TipoMigracion.Front, ruta);
+
+                    mensaje = FormHelper.GenerarMensajeResultado(resultadoFront, resultadoBack, TipoMigracion.Ambos);
+                    icono = (resultadoBack.Exitoso && resultadoFront.Exitoso) ? MessageBoxIcon.Information : MessageBoxIcon.Warning;
+                }
+                else
+                {
+                    var resultado = await _migracionService.EjecutarMigracionAsync(_config, progreso, tipo, ruta);
+                    mensaje = FormHelper.GenerarMensajeResultado(resultado);
+                    icono = resultado.Exitoso ? MessageBoxIcon.Information : MessageBoxIcon.Warning;
+                }
+
 
                 MessageBox.Show(mensaje, "Proceso Completado", MessageBoxButtons.OK, icono);
             }
@@ -315,36 +356,9 @@ namespace WindowsFormsApp1
 
         }
 
-        private void GuardarConfiguracion()
+        private void progressBar_Click(object sender, EventArgs e)
         {
-            try
-            {
-                string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.txt");
 
-                // Crear el contenido del archivo de configuración
-                var lineasConfig = new List<string>
-        {
-            $"NIT={txtNit.Text.Trim()}",
-            $"RutaDescarga={txtRutaDescarga.Text.Trim()}",
-            "# FRONT",
-            $"UsuarioFront={txtUsuarioFront.Text.Trim()}",
-            $"PasswordFront={txtPasswordFront.Text.Trim()}",
-            $"IpFront={txtIpFront.Text.Trim()}",
-            $"BaseDatosFront={txtBaseDatosFront.Text.Trim()}",
-            "# BACK",
-            $"UsuarioBack={txtUsuarioBack.Text.Trim()}",
-            $"PasswordBack={txtPasswordBack.Text.Trim()}",
-            $"IpBack={txtIpBack.Text.Trim()}",
-            $"BaseDatosBack={txtBaseDatosBack.Text.Trim()}"
-        };
-
-                // Escribir todas las líneas al archivo (sobrescribir si existe, crear si no existe)
-                File.WriteAllLines(configPath, lineasConfig);
-            }
-            catch (Exception ex)
-            {
-                UIHelper.MostrarError($"Error al guardar la configuración: {ex.Message}", "Error al Guardar");
-            }
         }
     }
 }

@@ -27,6 +27,10 @@ namespace WindowsFormsApp1.Models
         public string Password { get; set; }
         public string Ip { get; set; }
         public string NombreBaseDatos { get; set; }
+        
+        public bool SpEjecutado {  get; set; }
+
+        public string SpName { get; set; }
 
         public bool EstaCompleto()
         {

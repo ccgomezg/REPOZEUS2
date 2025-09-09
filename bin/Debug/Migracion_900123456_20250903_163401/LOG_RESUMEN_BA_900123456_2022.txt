@@ -1,5 +1,0 @@
-﻿03/09/2025 16:34:03
-Año 2022 BACK procesado exitosamente
-Total registros: 94
-Archivo: BA_900123456_2022.txt
-Tamaño: 90 KB

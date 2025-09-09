@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ namespace WindowsFormsApp1.Services
 {
     public interface IApiService
     {
-        Task EnviarArchivosAsync(List<string> archivos, string nit, string claveApi);
+         Task<(int StatusCode, string Content)> EnviarArchivoZipAsync(string rutaZip, string nit, string ticket, string totalDocumentos, int maxReintentos = 3);
     }
 
     public class ApiService : IApiService
@@ -21,6 +22,7 @@ namespace WindowsFormsApp1.Services
         private readonly string _baseUrl;
         private readonly string _loginEndpoint;
         private readonly string _uploadEndpoint;
+        private const int MAX_REINTENTOS = 3;
 
         private string _tokenActual;
         private DateTime _tokenExpiracion;
@@ -30,240 +32,118 @@ namespace WindowsFormsApp1.Services
             _fileService = fileService;
             _httpClient = new HttpClient
             {
-                Timeout = TimeSpan.FromMinutes(15) // Más tiempo para archivos grandes
+                Timeout = TimeSpan.FromMinutes(15)
+            };
+            _baseUrl = "https://potential-train-qg4rpv96pvpfxrp7-8000.app.github.dev";
+            _loginEndpoint = "/auth/login";
+            _uploadEndpoint = "/upload-zip";
+        }
+
+        private async Task ObtenerTokenAsync(string nit)
+        {
+
+            var formData = new Dictionary<string, string>
+            {
+                { "accesstoken", "b7fbef73-f359-4408-aba9-53fe78589196" },
+                { "nit", nit},
             };
 
-            // URLs configurables - cambiar según tu API real
-            _baseUrl = "https://api.miempresa.com";
-            _loginEndpoint = "/auth/login";
-            _uploadEndpoint = "/migracion/upload";
-        }
+            var content = new FormUrlEncodedContent(formData);
 
-        public async Task EnviarArchivosAsync(List<string> archivos, string nit, string claveApi)
-        {
-            if (archivos == null || archivos.Count == 0)
-                throw new ArgumentException("No hay archivos para enviar");
+            var response = await _httpClient.PostAsync($"{_baseUrl}{_loginEndpoint}", content);
+            var response2 = await _httpClient.GetAsync($"{_baseUrl}");
 
-            if (string.IsNullOrWhiteSpace(nit) || string.IsNullOrWhiteSpace(claveApi))
-                throw new ArgumentException("NIT y clave API son requeridos");
-
-            try
+            if (response.IsSuccessStatusCode)
             {
-                // Obtener token de autenticación
-                await ObtenerTokenAsync(nit, claveApi);
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var loginResponse = JsonConvert.DeserializeObject<LoginResponse>(responseContent);
 
-                // Agrupar archivos por año y tipo para crear ZIPs más organizados
-                var gruposArchivos = AgruparArchivosPorTipo(archivos);
+                _tokenActual = loginResponse.Token;
+                _tokenExpiracion = DateTime.Now.AddSeconds(loginResponse.ExpiresIn - 60);
 
-                foreach (var grupo in gruposArchivos)
-                {
-                    await EnviarGrupoArchivosAsync(grupo.Value, grupo.Key, nit);
-                    await Task.Delay(2000); // Pausa entre grupos
-                }
+                _httpClient.DefaultRequestHeaders.Remove("Authorization");
+                _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_tokenActual}");
             }
-            catch (Exception ex)
+            else
             {
-                throw new Exception($"Error enviando archivos a la API: {ex.Message}", ex);
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Error en login - HTTP {response.StatusCode}: {errorContent}");
             }
         }
 
-        private async Task ObtenerTokenAsync(string nit, string claveApi)
-        {
-            // Verificar si el token actual es válido
-            if (!string.IsNullOrEmpty(_tokenActual) && DateTime.Now < _tokenExpiracion)
-            {
-                return; // Token válido, no necesita renovar
-            }
-
-            try
-            {
-                var loginData = new
-                {
-                    nit = nit,
-                    clave = claveApi,
-                    aplicacion = "MigracionTool"
-                };
-
-                var jsonContent = JsonConvert.SerializeObject(loginData);
-                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-
-                var response = await _httpClient.PostAsync($"{_baseUrl}{_loginEndpoint}", content);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var responseContent = await response.Content.ReadAsStringAsync();
-
-                    // Parsear respuesta JSON usando Newtonsoft.Json
-                    var loginResponse = JsonConvert.DeserializeObject<LoginResponse>(responseContent);
-
-                    _tokenActual = loginResponse.Token;
-                    _tokenExpiracion = DateTime.Now.AddSeconds(loginResponse.ExpiresIn - 60); // 1 min antes de expirar
-
-                    // Configurar header de autorización
-                    _httpClient.DefaultRequestHeaders.Remove("Authorization");
-                    _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_tokenActual}");
-                }
-                else
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    throw new Exception($"Error en login - HTTP {response.StatusCode}: {errorContent}");
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error obteniendo token de autenticación: {ex.Message}", ex);
-            }
-        }
-
-        private Dictionary<string, List<string>> AgruparArchivosPorTipo(List<string> archivos)
-        {
-            var grupos = new Dictionary<string, List<string>>();
-
-            foreach (var archivo in archivos)
-            {
-                var nombreArchivo = Path.GetFileName(archivo);
-                var partes = nombreArchivo.Split('_');
-
-                if (partes.Length >= 3)
-                {
-                    var tipo = partes[0]; // FR o BA
-                    var nit = partes[1];
-                    var anio = partes[2].Replace(".txt", "");
-
-                    var clave = $"{tipo}_{anio}";
-
-                    if (!grupos.ContainsKey(clave))
-                    {
-                        grupos[clave] = new List<string>();
-                    }
-
-                    grupos[clave].Add(archivo);
-                }
-            }
-
-            return grupos;
-        }
-
-        private async Task EnviarGrupoArchivosAsync(List<string> archivos, string nombreGrupo, string nit)
-        {
-            var directorioTrabajo = Path.GetDirectoryName(archivos[0]);
-            var nombreZip = $"{nombreGrupo}_{nit}.zip";
-            var rutaZip = Path.Combine(directorioTrabajo, nombreZip);
-
-            try
-            {
-                // Crear archivo ZIP
-                CrearArchivoZip(archivos, rutaZip);
-
-                // Enviar ZIP
-                await EnviarArchivoZipAsync(rutaZip, nit, nombreGrupo);
-
-                // Limpiar archivo ZIP temporal
-                if (File.Exists(rutaZip))
-                {
-                    File.Delete(rutaZip);
-                }
-            }
-            catch (Exception ex)
-            {
-                _fileService.CrearArchivoLog(
-                    directorioTrabajo,
-                    $"ERROR_ZIP_{nombreGrupo}",
-                    $"Error procesando grupo {nombreGrupo}: {ex.Message}",
-                    true
-                );
-                throw;
-            }
-        }
-
-        private void CrearArchivoZip(List<string> archivos, string rutaZip)
-        {
-            using (var zip = ZipFile.Open(rutaZip, ZipArchiveMode.Create))
-            {
-                foreach (var archivo in archivos)
-                {
-                    if (File.Exists(archivo))
-                    {
-                        var nombreArchivo = Path.GetFileName(archivo);
-                        zip.CreateEntryFromFile(archivo, nombreArchivo, CompressionLevel.Optimal);
-                    }
-                }
-            }
-        }
-
-        private async Task EnviarArchivoZipAsync(string rutaZip, string nit, string grupo)
+        public async Task<(int StatusCode, string Content)> EnviarArchivoZipAsync(
+    string rutaZip, string nit, string ticket, string totalDocumentos, int maxReintentos = 3)
         {
             if (!File.Exists(rutaZip))
                 throw new FileNotFoundException($"Archivo ZIP no encontrado: {rutaZip}");
 
-            try
+            // Login solo si no hay token o está vencido
+            if (string.IsNullOrEmpty(_tokenActual) || DateTime.Now >= _tokenExpiracion)
+                await ObtenerTokenAsync(nit);
+
+            var fileContent = File.ReadAllBytes(rutaZip);
+            var fileName = Path.GetFileName(rutaZip);
+
+            int intento = 0;
+            while (intento < maxReintentos)
             {
-                var fileContent = File.ReadAllBytes(rutaZip);
-                var fileName = Path.GetFileName(rutaZip);
-                var directorio = Path.GetDirectoryName(rutaZip);
-
-                using (var formData = new MultipartFormDataContent())
+                try
                 {
-                    formData.Add(new StringContent(nit), "nit");
-                    formData.Add(new StringContent(grupo), "tipo_migracion");
-                    formData.Add(new StringContent(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")), "fecha_envio");
-
-                    var fileContentMultipart = new ByteArrayContent(fileContent);
-                    fileContentMultipart.Headers.ContentType =
-                        System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/zip");
-                    formData.Add(fileContentMultipart, "archivo_zip", fileName);
-
-                    var response = await _httpClient.PostAsync($"{_baseUrl}{_uploadEndpoint}", formData);
-
-                    if (response.IsSuccessStatusCode)
+                    using (var formData = new MultipartFormDataContent())
                     {
-                        var responseContent = await response.Content.ReadAsStringAsync();
-                        _fileService.CrearArchivoLog(
-                            directorio,
-                            $"API_SUCCESS_{grupo}",
-                            $"ENVIO EXITOSO\n" +
-                            $"Archivo: {fileName}\n" +
-                            $"Grupo: {grupo}\n" +
-                            $"Tamaño: {fileContent.Length / 1024:N0} KB\n" +
-                            $"Respuesta: {responseContent}"
-                        );
-                    }
-                    else
-                    {
-                        var errorContent = await response.Content.ReadAsStringAsync();
-                        var errorMessage = $"Error HTTP {response.StatusCode}: {errorContent}";
+                        formData.Add(new StringContent(nit), "nit");
+                        formData.Add(new StringContent(ticket), "ticket");
+                        formData.Add(new StringContent(totalDocumentos), "totalDocumentos");
 
-                        _fileService.CrearArchivoLog(
-                            directorio,
-                            $"API_ERROR_{grupo}",
-                            $"ERROR ENVIO API\n" +
-                            $"Archivo: {fileName}\n" +
-                            $"Grupo: {grupo}\n" +
-                            $"Error: {errorMessage}",
-                            true
-                        );
+                        var fileContentMultipart = new ByteArrayContent(fileContent);
+                        fileContentMultipart.Headers.ContentType =
+                            System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/zip");
+                        formData.Add(fileContentMultipart, "archivo", fileName);
 
-                        throw new Exception(errorMessage);
+                        using (var req = new HttpRequestMessage(HttpMethod.Post, $"{_baseUrl}{_uploadEndpoint}"))
+                        {
+                            req.Content = formData;
+
+                            // headers por solicitud (no en DefaultRequestHeaders dentro del bucle)
+                            req.Headers.TryAddWithoutValidation("Accept-Encoding", "gzip, deflate, br");
+                            req.Headers.Connection.Add("keep-alive");
+                            req.Headers.TryAddWithoutValidation("x-sdk-selected-connection", "1");
+                            req.Headers.TryAddWithoutValidation("x-sdk-session", "c21703b3-e3b1-4da6-9472-2883000ffd8a");
+
+                            var response = await _httpClient.SendAsync(req);
+                            var content = await response.Content.ReadAsStringAsync();
+                            var code = (int)response.StatusCode;
+
+                            if (code == 200) return (code, content);
+
+                            if ((code == 401 || code == 403) && intento + 1 < maxReintentos)
+                            {
+                                await ObtenerTokenAsync(nit);
+                                intento++;
+                                await Task.Delay(1000);
+                                continue;
+                            }
+
+                            if ((code == 429 || (code >= 500 && code <= 599)) && intento + 1 < maxReintentos)
+                            {
+                                intento++;
+                                await Task.Delay(2000);
+                                continue;
+                            }
+
+                            return (code, content);
+                        }
                     }
                 }
+                catch
+                {
+                    intento++;
+                    if (intento >= maxReintentos) throw;
+                    await Task.Delay(2000);
+                }
             }
-            catch (Exception ex)
-            {
-                var directorio = Path.GetDirectoryName(rutaZip);
-                var fileName = Path.GetFileName(rutaZip);
 
-                _fileService.CrearArchivoLog(
-                    directorio,
-                    $"API_EXCEPTION_{grupo}",
-                    $"EXCEPCION ENVIO API\n" +
-                    $"Archivo: {fileName}\n" +
-                    $"Grupo: {grupo}\n" +
-                    $"Error: {ex.Message}",
-                    true
-                );
-
-                throw new Exception($"Error enviando {fileName}: {ex.Message}", ex);
-            }
+            return (0, "Sin respuesta");
         }
 
         public void Dispose()
@@ -271,11 +151,10 @@ namespace WindowsFormsApp1.Services
             _httpClient?.Dispose();
         }
 
-        // Clase para deserializar respuesta de login
         private class LoginResponse
         {
             public string Token { get; set; }
-            public int ExpiresIn { get; set; } // Segundos hasta expiración
+            public int ExpiresIn { get; set; }
             public string RefreshToken { get; set; }
         }
     }

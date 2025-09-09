@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Manual de uso — App de Migración de Datos</title>
+<meta name="description" content="Guía rápida y detallada para operar la aplicación de migración (WinForms).">
+<style>
+  :root{
+    --bg: #f7f9fc;
+    --panel:#ffffff;
+    --card:#ffffff;
+    --muted:#465362;
+    --text:#0f1720;
+    --brand:#2563eb;
+    --brand-2:#60a5fa;
+    --ok:#22c55e;
+    --warn:#f59e0b;
+    --err:#ef4444;
+    --border:rgba(15,23,32,.1);
+    --shadow: 0 4px 16px rgba(15, 23, 42, .06);
+  }
+  body{
+    margin:0;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: var(--bg);
+    color:var(--text);
+    line-height:1.6;
+  }
+  .container{max-width:1080px; margin:0 auto; padding: 28px 20px;}
+  header.hero{
+    position:sticky; top:0; z-index:10;
+    background: var(--panel);
+    border-bottom:1px solid var(--border);
+    padding:16px 0;
+  }
+  .hero-inner{display:flex; align-items:center; gap:16px; justify-content:space-between}
+  .app-title{display:flex; align-items:center; gap:12px; font-weight:700;}
+  .badge{font-size:.75rem; padding:.2rem .6rem; border:1px solid var(--border); border-radius:999px; color:var(--muted)}
+  .actions{display:flex; gap:10px; align-items:center}
+  button, .button{
+    border:1px solid var(--border);
+    background:var(--panel);
+    color:var(--text);
+    padding:.5rem .9rem;
+    border-radius:10px;
+    cursor:pointer;
+    box-shadow:var(--shadow);
+    font-weight:600;
+    font-size:.9rem;
+  }
+  .button.brand{background:linear-gradient(180deg, var(--brand), var(--brand-2)); color:white; border:none}
+  main{padding-top:22px}
+  .grid{display:grid; gap:28px}
+  @media (min-width: 920px){ .grid.cols-2{ grid-template-columns: 1fr 1fr } }
+  section.card{
+    background: var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:24px;
+    box-shadow:var(--shadow);
+  }
+  section.card + section.card{margin-top:28px}
+  h1{font-size:1.9rem; margin:.2rem 0 1rem}
+  h2{font-size:1.4rem; margin:0 0 1rem}
+  h3{font-size:1.15rem; margin:1.2rem 0 .7rem}
+  p{margin:.4rem 0 .9rem}
+  ul, ol{margin:.5rem 0 1rem 1.1rem}
+  .toc{display:flex; flex-wrap:wrap; gap:10px; margin:.6rem 0 0}
+  .toc a{
+    text-decoration:none; color:var(--brand);
+    border:1px solid var(--border);
+    padding:.4rem .7rem; border-radius:8px;
+    font-size:.9rem; background:#f0f4ff;
+  }
+  .callout{border-left:4px solid var(--brand); padding:.9rem 1rem; border-radius:6px; background:#f9fbff; margin-top:1rem}
+  pre{
+    background:#0f172a; color:#e5edff;
+    border-radius:10px; padding:14px;
+    overflow:auto; font-size:.9rem; margin:1rem 0;
+  }
+  .kv{display:grid; grid-template-columns: 180px 1fr; gap:14px 20px; margin-top:.8rem}
+  .kv > div{padding:.4rem 0; border-bottom:1px dashed var(--border)}
+  .checklist{list-style:none; padding:0; margin:.5rem 0}
+  .checklist li{margin:.5rem 0; padding-left:26px; position:relative}
+  .checklist li::before{content:"✓"; position:absolute; left:0; top:2px; color:var(--ok)}
+  .status{display:inline-block; padding:.25rem .6rem; border-radius:6px; font-size:.85rem; margin:.2rem 0}
+  .status.ok{color:#15803d; background:#dcfce7}
+  .status.warn{color:#b45309; background:#fef9c3}
+  .status.err{color:#b91c1c; background:#fee2e2}
+  .footer{color:var(--muted); text-align:center; padding:24px 0; margin-top:40px; font-size:.85rem}
+  /* mejoras específicas para la grilla inicial */
+  .dual-card{display:grid; grid-template-columns:1fr 1fr; gap:32px; margin-top:28px}
+  .dual-card section.card{margin:0}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="container hero-inner">
+    <div class="app-title">
+      <strong>Manual de uso</strong> · Aplicación de Migración de Datos
+      <span class="badge">WinForms</span>
+      <span class="badge">Portable</span>
+    </div>
+    <div class="actions">
+      <button onclick="window.print()">🖨️ Imprimir</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <section class="card">
+    <h1>¿Qué hace la aplicación?</h1>
+    <p>Extrae transacciones desde BD <b>BACK</b> y/o <b>FRONT</b> por año, genera un <b>TXT</b>, lo comprime a <b>ZIP</b> y lo <b>envía a la API</b>. Todo queda registrado en archivos y en la interfaz.</p>
+    <div class="toc">
+      <a href="#requisitos">Requisitos</a>
+      <a href="#pantalla">Elementos</a>
+      <a href="#flujo">Flujo</a>
+      <a href="#estructura">Carpetas</a>
+      <a href="#resultados">Resultados</a>
+      <a href="#botones">Botones</a>
+      <a href="#errores">Errores</a>
+      <a href="#config">Config.txt</a>
+    </div>
+  </section>
+
+  <!-- 🔹 Bloques mejorados -->
+  <div class="dual-card">
+    <section class="card" id="requisitos">
+      <h2>Requisitos</h2>
+      <ul class="checklist">
+        <li>Credenciales válidas de <b>SQL Server</b> para BACK y/o FRONT.</li>
+        <li><b>NIT</b> de la empresa (sin dígito de verificación).</li>
+        <li>Carpeta de salida con <b>permisos de escritura</b>.</li>
+      </ul>
+      <div class="callout">Puedes usar solo una conexión (BACK o FRONT). Si eliges AMBOS, se procesan secuencialmente.</div>
+    </section>
+
+    <section class="card" id="pantalla">
+      <h2>Elementos principales</h2>
+      <div class="kv">
+        <div>NIT</div><div>Número sin dígito.</div>
+        <div>BD BACK / FRONT</div><div>Usuario, Contraseña, IP, Base de datos.</div>
+        <div>📁 Ruta</div><div>Carpeta de salida para TXT/ZIP.</div>
+        <div>📦 Migración</div><div>BACK, FRONT o AMBOS. “Config (Sp)” ejecuta un SP previo.</div>
+        <div>📅 Años</div><div>Checkboxes o <b>TODOS</b>.</div>
+        <div>📊 Registros</div><div>Estimado del periodo.</div>
+        <div>✅ Verificar</div><div>Prueba conexión BD.</div>
+        <div>🔄 Migrar</div><div>Ejecuta proceso.</div>
+      </div>
+    </section>
+  </div>
+  <!-- 🔹 Fin bloques mejorados -->
+
+  <section class="card" id="flujo">
+    <h2>Flujo recomendado</h2>
+    <ol>
+      <li>Ingresar NIT.</li>
+      <li>Configurar conexión BACK/FRONT.</li>
+      <li>Definir carpeta de salida.</li>
+      <li>Seleccionar tipo de migración.</li>
+      <li>Elegir años.</li>
+      <li>(Opcional) Ejecutar SP previo.</li>
+      <li>Verificar conexión.</li>
+      <li>Migrar → generar TXT → ZIP → enviar API.</li>
+    </ol>
+  </section>
+
+  <section class="card" id="estructura">
+    <h2>Estructura de carpetas</h2>
+    <pre>
+WindowsFormsApp1.exe
+config/
+  config.txt
+  migracion_log.txt
+MIGRACIONES/
+  {NIT}/
+    FR_{NIT}_{AÑO}.zip
+    BA_{NIT}_{AÑO}.zip
+    RESUMEN_*_{AÑO}.txt
+    </pre>
+  </section>
+
+  <section class="card" id="resultados">
+    <h2>Resultados & registros</h2>
+    <ul>
+      <li>Resumen por año (<code>RESUMEN_*</code>).</li>
+      <li>Bitácora global (<code>migracion_log.txt</code>).</li>
+      <li>Mensajes en pantalla.</li>
+    </ul>
+  </section>
+
+  <section class="card" id="config">
+    <h2>Adicional: Configuración en config.txt</h2>
+    <p>Permite redefinir columnas usadas por defecto en las consultas.</p>
+    <h3>Valores por defecto</h3>
+    <pre>
+BACK:
+  modulo = "Modulo"
+  ldf = "Mensaje_respuesta_ds"
+  parametros_Adicionales = "ParametrosAdiconles"
+  fecha = "FechaHoraGrabacion"
+  nombre_de_la_tabla_Sql = "FacturaElectronica_Transaccion"
+
+FRONT:
+  modulo = "Modulo"
+  ldf = "Mensaje_numero_cd"
+  parametros_Adicionales = "ParametrosAdicionales_Xml"
+  fecha = "Fechahoragrabacion"
+  nombre_de_la_tabla_Sql = "Ho_facturaelectronica_transaccion"
+    </pre>
+    <h3>Ejemplo de mapeo</h3>
+    <pre>
+# SELECT_BACK={"modulo":"", "ldf":"","parametros_Adicionales":"", "fecha":"fecha_prueba", "nombre_de_tabla_Sql":""}
+# SELECT_FRONT={"modulo":"", "ldf":"","parametros_Adicionales":"", "fecha":"", "nombre_de_tabla_Sql":""}
+    </pre>
+  </section>
+
+  <section class="card" id="botones">
+    <h2>Botones</h2>
+    <ul>
+      <li><b>Verificar</b>: guarda config y prueba login.</li>
+      <li><b>Migrar</b>: valida, confirma y ejecuta.</li>
+      <li><b>Limpiar</b>: borra todos los campos.</li>
+    </ul>
+  </section>
+
+  <section class="card" id="errores">
+    <h2>Errores comunes</h2>
+    <ul>
+      <li><span class="status err">Credenciales inválidas</span> → revisar IP/usuario.</li>
+      <li><span class="status warn">No hay años</span> → selecciona al menos uno.</li>
+      <li><span class="status warn">ZIP no enviado</span> → revisar NIT/API.</li>
+      <li><span class="status ok">Sin datos</span> → año vacío.</li>
+    </ul>
+  </section>
+
+  <div class="footer">© <span id="year"></span> Aplicación de Migración • Documento portable</div>
+</main>
+
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+</body>
+</html>

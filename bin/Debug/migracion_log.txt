@@ -1,0 +1,15 @@
+# Log de Migraciones Completadas
+# Formato: NIT|Año|Tipo|CantidadArchivos|Fecha|SubidoS3
+
+900123456|2024|BACK|1|2025-09-08 17:35:04|False|System.Exception: Error en login - HTTP NotFound: 
+   at WindowsFormsApp1.Services.ApiService.<ObtenerTokenAsync>d__9.MoveNext() in E:\DV-CCGG\Zeus\Source\Repos\WindowsFormsApp1\WindowsFormsApp1\Services\ApiService.cs:line 70
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.GetResult()
+   at WindowsFormsApp1.Services.ApiService.<EnviarArchivoZipAsync>d__10.MoveNext() in E:\DV-CCGG\Zeus\Source\Repos\WindowsFormsApp1\WindowsFormsApp1\Services\ApiService.cs:line 82
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter`1.GetResult()
+   at WindowsFormsApp1.Services.MigracionService.<DividirYEnviarArchivos>d__11.MoveNext() in E:\DV-CCGG\Zeus\Source\Repos\WindowsFormsApp1\WindowsFormsApp1\Services\MigracionService.cs:line 236

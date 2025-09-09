@@ -12,7 +12,7 @@ namespace WindowsFormsApp1.Helpers
     {
         #region Gestión de años
 
-        public static int[] GenerarAniosDisponibles(int cantidad = 7)
+        public static int[] GenerarAniosDisponibles(int cantidad = 9)
         {
             int anioActual = DateTime.Now.Year;
             int[] anios = new int[cantidad];
@@ -266,15 +266,37 @@ namespace WindowsFormsApp1.Helpers
                    $"• Ruta: {config.RutaDescarga}";
         }
 
-        public static string GenerarMensajeResultado(MigracionResult resultado)
+        public static string GenerarMensajeResultado(MigracionResult resultado, MigracionResult resultadoBack = null, TipoMigracion tipo = TipoMigracion.NULL)
         {
+            if (tipo != TipoMigracion.NULL && tipo==TipoMigracion.Ambos)
+            {
+                var mensajeBack = $"Migración BACK {(resultadoBack.Exitoso ? "completada" : "completada con errores")}!\n\n" +
+                                $"Archivos generados: {resultadoBack.ArchivosGenerados}\n" +
+                                $"Años procesados: {resultadoBack.AniosProcesados.Count}\n" +
+                                $"Archivos enviados a API: {resultadoBack.ArchivosEnviadosAPI}\n" +
+                                $"Errores: {resultadoBack.Errores.Count}\n" +
+                                $"Duración: {resultadoBack.DuracionTotal:hh\\:mm\\:ss}\n" +
+                                $"Directorio: {resultadoBack.DirectorioArchivos}";
+
+                var mensajeFront =
+                    $"Migración FRONT {(resultado.Exitoso ? "completada" : "completada con errores")}!\n\n" +
+                    $"Archivos generados: {resultado.ArchivosGenerados}\n" +
+                    $"Años procesados: {resultado.AniosProcesados.Count}\n" +
+                    $"Archivos enviados a API: {resultado.ArchivosEnviadosAPI}\n" +
+                    $"Errores: {resultado.Errores.Count}\n" +
+                    $"Duración: {resultado.DuracionTotal:hh\\:mm\\:ss}\n" +
+                    $"Directorio: {resultado.DirectorioArchivos}";
+
+                return mensajeBack + "\n\n" + mensajeFront;
+
+            }
             return $"Migración {(resultado.Exitoso ? "completada" : "completada con errores")}!\n\n" +
-                   $"Archivos generados: {resultado.ArchivosGenerados.Count}\n" +
-                   $"Años procesados: {resultado.AniosProcesados.Count}\n" +
-                   $"Archivos enviados a API: {resultado.ArchivosEnviadosAPI}\n" +
-                   $"Errores: {resultado.Errores.Count}\n" +
-                   $"Duración: {resultado.DuracionTotal:hh\\:mm\\:ss}\n" +
-                   $"Directorio: {resultado.DirectorioArchivos}";
+                       $"Archivos generados: {resultado.ArchivosGenerados}\n" +
+                       $"Años procesados: {resultado.AniosProcesados.Count}\n" +
+                       $"Archivos enviados a API: {resultado.ArchivosEnviadosAPI}\n" +
+                       $"Errores: {resultado.Errores.Count}\n" +
+                       $"Duración: {resultado.DuracionTotal:hh\\:mm\\:ss}\n" +
+                       $"Directorio: {resultado.DirectorioArchivos}";
         }
 
         public static void ConfigurarValidacionNIT(TextBox txtNit)
