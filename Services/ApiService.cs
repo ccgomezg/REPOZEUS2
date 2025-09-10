@@ -66,8 +66,8 @@ namespace WindowsFormsApp1.Services
             }
             else
             {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                throw new Exception($"Error en login - HTTP {response.StatusCode}: {errorContent}");
+                //var errorContent = await response.Content.ReadAsStringAsync();
+                //throw new Exception($"Error API DE SUBIDA DE ARCHIVOS (SIN ACCESOS) - HTTP {response.StatusCode}: {errorContent}");
             }
         }
 
@@ -111,7 +111,7 @@ namespace WindowsFormsApp1.Services
                             req.Headers.TryAddWithoutValidation("x-sdk-session", "c21703b3-e3b1-4da6-9472-2883000ffd8a");
 
                             var response = await _httpClient.SendAsync(req);
-                            var content = await response.Content.ReadAsStringAsync();
+                            var content = response.ReasonPhrase;
                             var code = (int)response.StatusCode;
 
                             if (code == 200) return (code, content);

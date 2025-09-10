@@ -1,3 +1,0 @@
-# Log de Migraciones Completadas
-# Formato: NIT|Año|Tipo|CantidadArchivos|Fecha|SubidoS3
-

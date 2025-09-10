@@ -40,7 +40,7 @@ namespace WindowsFormsApp1
 
             _fileService = new FileService();
             var apiService = new ApiService(_fileService);
-            _migracionService = new MigracionService(_databaseService, _fileService, apiService);
+            _migracionService = new MigracionService(_databaseService, _fileService, apiService, _configService);
         }
 
         private void InicializarFormulario()
@@ -136,6 +136,7 @@ namespace WindowsFormsApp1
             btnverificar.Enabled = false;
             btnverificar.Text = "Verificando...";
 
+
             try
             {
                 FormHelper.ActualizarConfigDesdeFormulario(_config, chkTodos, _checkboxAnios,
@@ -213,6 +214,8 @@ namespace WindowsFormsApp1
                     txtNit, txtRutaDescarga, txtUsuarioFront, txtPasswordFront, txtIpFront, txtBaseDatosFront,
                     txtUsuarioBack, txtPasswordBack, txtIpBack, txtBaseDatosBack);
 
+                //CargarConfiguracionInicial();
+
                 string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.txt");
                 _configService.GuardarConfiguracion(configPath, _config);
 
@@ -268,6 +271,7 @@ namespace WindowsFormsApp1
             {
                 var progreso = new Progress<int>(valor => progressBar.Value = valor);
                 string mensaje = "";
+               
                 MessageBoxIcon icono = MessageBoxIcon.Question;
 
                 string ruta = _fileService.CrearDirectorioMigracion(_config.RutaDescarga, _config.NIT);
@@ -275,15 +279,15 @@ namespace WindowsFormsApp1
                 TipoMigracion tipo = ObtenerTipoMigracionSeleccionado();
                 if(tipo == TipoMigracion.Ambos)
                 {
-                    var resultadoBack = await _migracionService.EjecutarMigracionAsync(_config, progreso, TipoMigracion.Back, ruta);
-                    var resultadoFront = await _migracionService.EjecutarMigracionAsync(_config, progreso, TipoMigracion.Front, ruta);
+                    var resultadoBack = await _migracionService.EjecutarMigracionAsync(_config, progreso, TipoMigracion.Back, ruta,  checkBoxSp.Checked);
+                    var resultadoFront = await _migracionService.EjecutarMigracionAsync(_config, progreso, TipoMigracion.Front, ruta, checkBoxSp.Checked);
 
                     mensaje = FormHelper.GenerarMensajeResultado(resultadoFront, resultadoBack, TipoMigracion.Ambos);
                     icono = (resultadoBack.Exitoso && resultadoFront.Exitoso) ? MessageBoxIcon.Information : MessageBoxIcon.Warning;
                 }
                 else
                 {
-                    var resultado = await _migracionService.EjecutarMigracionAsync(_config, progreso, tipo, ruta);
+                    var resultado = await _migracionService.EjecutarMigracionAsync(_config, progreso, tipo, ruta, checkBoxSp.Checked);
                     mensaje = FormHelper.GenerarMensajeResultado(resultado);
                     icono = resultado.Exitoso ? MessageBoxIcon.Information : MessageBoxIcon.Warning;
                 }
@@ -345,21 +349,10 @@ namespace WindowsFormsApp1
             this.ActiveControl = null;
         }
         private void grpFront_Enter(object sender, EventArgs e) { }
-        private void chkTodos_CheckedChanged_1(object sender, EventArgs e) { }
         private void button1_Click(object sender, EventArgs e) { }
         private void txtIpFront_TextChanged(object sender, EventArgs e) { }
 
         #endregion
-
-        private void checkBox1_CheckedChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void progressBar_Click(object sender, EventArgs e)
-        {
-
-        }
     }
 }
 

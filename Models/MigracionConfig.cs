@@ -13,6 +13,9 @@ namespace WindowsFormsApp1.Models
         public DatabaseConfig DatabaseFront { get; set; }
         public DatabaseConfig DatabaseBack { get; set; }
 
+        public bool DividirZip { get; set; }
+        public long tamanioZip { get; set; }
+
         public MigracionConfig()
         {
             DatabaseFront = new DatabaseConfig();

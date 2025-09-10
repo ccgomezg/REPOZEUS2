@@ -1,15 +1,19 @@
 # Log de Migraciones Completadas
-# Formato: NIT|Año|Tipo|CantidadArchivos|Fecha|SubidoS3
+# Formato: NIT|Año|Tipo|CantidadArchivos|rutaLocal|SubidoS3|Fecha|respuestashttp|
 
-900123456|2024|BACK|1|2025-09-08 17:35:04|False|System.Exception: Error en login - HTTP NotFound: 
-   at WindowsFormsApp1.Services.ApiService.<ObtenerTokenAsync>d__9.MoveNext() in E:\DV-CCGG\Zeus\Source\Repos\WindowsFormsApp1\WindowsFormsApp1\Services\ApiService.cs:line 70
---- End of stack trace from previous location where exception was thrown ---
-   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
-   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
-   at System.Runtime.CompilerServices.TaskAwaiter.GetResult()
-   at WindowsFormsApp1.Services.ApiService.<EnviarArchivoZipAsync>d__10.MoveNext() in E:\DV-CCGG\Zeus\Source\Repos\WindowsFormsApp1\WindowsFormsApp1\Services\ApiService.cs:line 82
---- End of stack trace from previous location where exception was thrown ---
-   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
-   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
-   at System.Runtime.CompilerServices.TaskAwaiter`1.GetResult()
-   at WindowsFormsApp1.Services.MigracionService.<DividirYEnviarArchivos>d__11.MoveNext() in E:\DV-CCGG\Zeus\Source\Repos\WindowsFormsApp1\WindowsFormsApp1\Services\MigracionService.cs:line 236
+900123456|2024|BACK|16|E:\DV-CCGG\Zeus\Source\Repos\WindowsFormsApp1\WindowsFormsApp1\bin\Debug\MIGRACIONES\Migracion_900123456_20250910_064641\BA_900123456_2024_001.zip|TRue|2025-09-10 06:47:25|704 - 
+900123456|2024|BACK|16|E:\DV-CCGG\Zeus\Source\Repos\WindowsFormsApp1\WindowsFormsApp1\bin\Debug\MIGRACIONES\Migracion_900123456_20250910_064641\BA_900123456_2024_002.zip|True|2025-09-10 06:49:58|200 - OK
+900123456|2024|BACK|16|E:\DV-CCGG\Zeus\Source\Repos\WindowsFormsApp1\WindowsFormsApp1\bin\Debug\MIGRACIONES\Migracion_900123456_20250910_064641\BA_900123456_2024_003.zip|True|2025-09-10 06:50:03|200 - OK
+900123456|2024|BACK|16|E:\DV-CCGG\Zeus\Source\Repos\WindowsFormsApp1\WindowsFormsApp1\bin\Debug\MIGRACIONES\Migracion_900123456_20250910_064641\BA_900123456_2024_004.zip|True|2025-09-10 06:50:04|200 - OK
+900123456|2024|BACK|16|E:\DV-CCGG\Zeus\Source\Repos\WindowsFormsApp1\WindowsFormsApp1\bin\Debug\MIGRACIONES\Migracion_900123456_20250910_064641\BA_900123456_2024_005.zip|True|2025-09-10 06:50:05|200 - OK
+900123456|2024|BACK|16|E:\DV-CCGG\Zeus\Source\Repos\WindowsFormsApp1\WindowsFormsApp1\bin\Debug\MIGRACIONES\Migracion_900123456_20250910_064641\BA_900123456_2024_006.zip|True|2025-09-10 06:50:07|200 - OK
+900123456|2024|BACK|16|E:\DV-CCGG\Zeus\Source\Repos\WindowsFormsApp1\WindowsFormsApp1\bin\Debug\MIGRACIONES\Migracion_900123456_20250910_064641\BA_900123456_2024_007.zip|True|2025-09-10 06:50:08|200 - OK
+900123456|2024|BACK|16|E:\DV-CCGG\Zeus\Source\Repos\WindowsFormsApp1\WindowsFormsApp1\bin\Debug\MIGRACIONES\Migracion_900123456_20250910_064641\BA_900123456_2024_008.zip|True|2025-09-10 06:50:09|200 - OK
+900123456|2024|BACK|16|E:\DV-CCGG\Zeus\Source\Repos\WindowsFormsApp1\WindowsFormsApp1\bin\Debug\MIGRACIONES\Migracion_900123456_20250910_064641\BA_900123456_2024_009.zip|True|2025-09-10 06:50:10|200 - OK
+900123456|2024|BACK|16|E:\DV-CCGG\Zeus\Source\Repos\WindowsFormsApp1\WindowsFormsApp1\bin\Debug\MIGRACIONES\Migracion_900123456_20250910_064641\BA_900123456_2024_010.zip|True|2025-09-10 06:50:12|200 - OK
+900123456|2024|BACK|16|E:\DV-CCGG\Zeus\Source\Repos\WindowsFormsApp1\WindowsFormsApp1\bin\Debug\MIGRACIONES\Migracion_900123456_20250910_064641\BA_900123456_2024_011.zip|True|2025-09-10 06:50:13|200 - OK
+900123456|2024|BACK|16|E:\DV-CCGG\Zeus\Source\Repos\WindowsFormsApp1\WindowsFormsApp1\bin\Debug\MIGRACIONES\Migracion_900123456_20250910_064641\BA_900123456_2024_012.zip|True|2025-09-10 06:50:14|200 - OK
+900123456|2024|BACK|16|E:\DV-CCGG\Zeus\Source\Repos\WindowsFormsApp1\WindowsFormsApp1\bin\Debug\MIGRACIONES\Migracion_900123456_20250910_064641\BA_900123456_2024_013.zip|True|2025-09-10 06:50:16|200 - OK
+900123456|2024|BACK|16|E:\DV-CCGG\Zeus\Source\Repos\WindowsFormsApp1\WindowsFormsApp1\bin\Debug\MIGRACIONES\Migracion_900123456_20250910_064641\BA_900123456_2024_014.zip|True|2025-09-10 06:50:17|200 - OK
+900123456|2024|BACK|16|E:\DV-CCGG\Zeus\Source\Repos\WindowsFormsApp1\WindowsFormsApp1\bin\Debug\MIGRACIONES\Migracion_900123456_20250910_064641\BA_900123456_2024_015.zip|True|2025-09-10 06:50:18|200 - OK
+900123456|2024|BACK|16|E:\DV-CCGG\Zeus\Source\Repos\WindowsFormsApp1\WindowsFormsApp1\bin\Debug\MIGRACIONES\Migracion_900123456_20250910_064641\BA_900123456_2024_016.zip|True|2025-09-10 06:50:19|200 - OK

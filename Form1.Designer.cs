@@ -625,7 +625,6 @@ namespace WindowsFormsApp1
             this.checkBoxSp.Size = new System.Drawing.Size(22, 21);
             this.checkBoxSp.TabIndex = 7;
             this.checkBoxSp.UseVisualStyleBackColor = true;
-            this.checkBoxSp.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
             // 
             // grpLapso
             // 
@@ -703,7 +702,6 @@ namespace WindowsFormsApp1
             this.progressBar.Size = new System.Drawing.Size(832, 18);
             this.progressBar.TabIndex = 9;
             this.progressBar.Visible = false;
-            this.progressBar.Click += new System.EventHandler(this.progressBar_Click);
             // 
             // verificar_conexion_btn
             // 

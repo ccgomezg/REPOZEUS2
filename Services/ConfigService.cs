@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using WindowsFormsApp1.Models;
@@ -14,6 +15,8 @@ namespace WindowsFormsApp1.Services
     {
         bool CargarConfiguracion(string rutaArchivo, out MigracionConfig config);
         void GuardarConfiguracion(string rutaArchivo, MigracionConfig config);
+        void ActualizarValorConfig(string rutaArchivo, string clave, string nuevoValor);
+        bool ActualizarConfiguracionExistente(string rutaArchivo, ref MigracionConfig configExistente);
     }
 
     public class ConfigService : IConfigService
@@ -22,7 +25,7 @@ namespace WindowsFormsApp1.Services
         {
             "NIT", "RutaDescarga",
             "UsuarioFront", "PasswordFront", "IpFront", "BaseDatosFront",
-            "UsuarioBack", "PasswordBack", "IpBack", "BaseDatosBack","SpBackEjecutado","SpFrontEjecutado", "SpNameFront", "SpNameBack"
+            "UsuarioBack", "PasswordBack", "IpBack", "BaseDatosBack","SpBackEjecutado","SpFrontEjecutado", "SpNameFront", "SpNameBack", "DividirZip","Tamañozip"
         };
 
         public bool CargarConfiguracion(string rutaArchivo, out MigracionConfig config)
@@ -76,7 +79,13 @@ namespace WindowsFormsApp1.Services
             string SpEjecutadoFrontFinal = SpEjecutadoFront ?? "SpFrontEjecutado=false" ;
 
             string SpNameBackFinal = SpNameBack ?? "SpNameBack =SpFacturaElectronica_MigracionFacturaCol_To_PTSIESA_Contabilidad";
-            string SpEjecutadoBackFinal = SpEjecutadoBack ?? "SpBackEjecutado=false"; ;
+            string SpEjecutadoBackFinal = SpEjecutadoBack ?? "SpBackEjecutado=false";
+
+            //4)zips tamaño y division
+            string dividirZip = BuscarLineaConfigExistente(existentes, "DividirZip")  ?? "DividirZip=1";
+            string tamañozip =  BuscarLineaConfigExistente(existentes, "Tamañozip") ?? "Tamañozip = 5";
+ 
+
 
 
             // 4) Escribe TODO el archivo NUEVO, pero con las líneas SELECT preservadas
@@ -116,6 +125,11 @@ namespace WindowsFormsApp1.Services
 
                     writer.WriteLine(SpEjecutadoFrontFinal);
                     writer.WriteLine(SpNameFrontFinal);
+                    writer.WriteLine();
+
+                    writer.WriteLine("#DIVIDIR ZIP (DividirZip  -> 1 sirve para activar la division (0 para desactivar), TAMAÑO DEL ZIP -> ENTEROS ENTRE 1-5 QUE REPRESENTA MB)");
+                    writer.WriteLine(dividirZip);
+                    writer.WriteLine(tamañozip);
 
 
                 }
@@ -161,6 +175,58 @@ namespace WindowsFormsApp1.Services
             return propiedades;
         }
 
+        public void ActualizarValorConfig(string rutaArchivo, string clave, string nuevoValor)
+        {
+            try
+            {
+                if (!ClavesPermitidas.Contains(clave))
+                {
+                    throw new ArgumentException($"La clave '{clave}' no es una clave permitida.");
+                }
+
+                if (!File.Exists(rutaArchivo))
+                {
+                    throw new FileNotFoundException($"El archivo de configuración no existe: {rutaArchivo}");
+                }
+
+                var lineas = File.ReadAllLines(rutaArchivo, Encoding.UTF8).ToList();
+                bool claveEncontrada = false;
+
+                for (int i = 0; i < lineas.Count; i++)
+                {
+                    var lineaLimpia = lineas[i].Trim();
+
+                    if (!string.IsNullOrWhiteSpace(lineaLimpia) &&
+                        !lineaLimpia.StartsWith("#") &&
+                        !lineaLimpia.StartsWith("//") &&
+                        !lineaLimpia.StartsWith(";"))
+                    {
+                        if (lineaLimpia.StartsWith(clave + "=", StringComparison.OrdinalIgnoreCase) ||
+                            lineaLimpia.StartsWith(clave + " =", StringComparison.OrdinalIgnoreCase))
+                        {
+
+                            lineas[i] = $"{clave}={nuevoValor}";
+                            claveEncontrada = true;
+                            break;
+                        }
+                    }
+                }
+
+
+                if (!claveEncontrada)
+                {
+                    lineas.Add($"{clave}={nuevoValor}");
+                }
+
+                
+                File.WriteAllLines(rutaArchivo, lineas, Encoding.UTF8);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error actualizando la configuración: {ex.Message}", ex);
+            }
+        }
+
         private static bool EsLineaValida(string linea)
         {
             return !string.IsNullOrWhiteSpace(linea) &&
@@ -200,6 +266,30 @@ namespace WindowsFormsApp1.Services
             return valor;
         }
 
+        public bool ActualizarConfiguracionExistente(string rutaArchivo, ref MigracionConfig configExistente)
+        {
+            try
+            {
+                if (!File.Exists(rutaArchivo))
+                    return false;
+
+                var propiedades = LeerPropiedadesArchivo(rutaArchivo);
+                if (propiedades.Count == 0)
+                    return false;
+
+                // Actualizar solo las propiedades que existen en el archivo
+                AsignarPropiedadesAConfig(propiedades, configExistente);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // Opcionalmente, puedes loggear el error
+                System.Diagnostics.Debug.WriteLine($"Error actualizando configuración: {ex.Message}");
+                return false;
+            }
+        }
+
+
         private static void AsignarPropiedadesAConfig(Dictionary<string, string> propiedades, MigracionConfig config)
         {
             if (propiedades.TryGetValue("NIT", out var nit))
@@ -235,6 +325,13 @@ namespace WindowsFormsApp1.Services
                 config.DatabaseBack.SpEjecutado = bool.TryParse(SpBack, out bool valor) ? valor : false;
             if (propiedades.TryGetValue("SpNameBack", out var SpNameBack))
                 config.DatabaseBack.SpName = SpNameBack;
+
+            //ZIP
+            if (propiedades.TryGetValue("DividirZip", out var dividirZip))
+                config.DividirZip = (dividirZip == "1");
+            if (propiedades.TryGetValue("Tamañozip", out var tamaniozip))
+                config.tamanioZip = long.TryParse(tamaniozip, out long n) && n >= 1 && n <= 35 ? n *1024 * 1024 : 5 * 1024 * 1024;
+
 
         }
     }

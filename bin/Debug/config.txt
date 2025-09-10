@@ -15,12 +15,16 @@ IpBack=10.10.22.25
 BaseDatosBack=claro_connekta_qa
 
 # Select Técnicos
-# SELECT_BACK={"modulo":"", "ldf":"","parametros_Adicionales":"", "fecha":"fecha_prueba", "nombre_de_tabla_Sql":""}
+# SELECT_BACK={"modulo":"", "ldf":"","parametros_Adicionales":"", "fecha":"", "nombre_de_tabla_Sql":""}
 # SELECT_FRONT={"modulo":"", "ldf":"","parametros_Adicionales":"", "fecha":"", "nombre_de_tabla_Sql":""}
 
 #Sp Config
-SpBackEjecutado=false
+SpBackEjecutado=true
 SpNameBack =SpFacturaElectronica_MigracionFacturaCol_To_PTSIESA_Contabilidad
 
 SpFrontEjecutado=false
 SpNameFront =SpFacturaElectronica_MigracionFacturaCol_To_PTSIESA_Contabilidad
+
+#DIVIDIR ZIP (DividirZip  -> 1 sirve para activar la division (0 para desactivar), TAMAÑO DEL ZIP -> ENTEROS ENTRE 1-5 QUE REPRESENTA MB)
+DividirZip=1
+Tamañozip = 5

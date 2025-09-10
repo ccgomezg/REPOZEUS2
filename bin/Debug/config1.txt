@@ -1,26 +1,30 @@
 ﻿# Configuración de Migración
-NIT=1111
+NIT=900123456
 RutaDescarga=E:\DV-CCGG\Zeus\Source\Repos\WindowsFormsApp1\WindowsFormsApp1\bin\Debug\
 
 # Base de datos Front
-UsuarioFront=
-PasswordFront=
-IpFront=
-BaseDatosFront=
+UsuarioFront=jcifuentes
+PasswordFront=62].MJ<6YDm*5WU1Z]p
+IpFront=zeusprudb01.siesacloud.com,49876
+BaseDatosFront=Paisar_Zeus_Prueba
 
 # Base de datos Back
-UsuarioBack=111
-PasswordBack=111
-IpBack=111
-BaseDatosBack=1111
+UsuarioBack=Cnktsde01
+PasswordBack=g1$98*W:/uBd3fLosm
+IpBack=10.10.22.25
+BaseDatosBack=claro_connekta_qa
 
 # Select Técnicos
-# SELECT_BACK={"modulo":"", "ldf":"","parametros_Adicionales":"", "fecha":"", "nombre_de_tabla_Sql":""}
+# SELECT_BACK={"modulo":"", "ldf":"","parametros_Adicionales":"", "fecha":"fecha_prueba", "nombre_de_tabla_Sql":""}
 # SELECT_FRONT={"modulo":"", "ldf":"","parametros_Adicionales":"", "fecha":"", "nombre_de_tabla_Sql":""}
 
 #Sp Config
-SpBackEjecutado="true"
+SpBackEjecutado=true
 SpNameBack =SpFacturaElectronica_MigracionFacturaCol_To_PTSIESA_Contabilidad
 
 SpFrontEjecutado=true
 SpNameFront =SpFacturaElectronica_MigracionFacturaCol_To_PTSIESA_Contabilidad
+
+#DIVIDIR ZIP (DividirZip  -> 1 sirve para activar la division (0 para desactivar), TAMAÑO DEL ZIP -> ENTEROS ENTRE 1-5 QUE REPRESENTA MB)
+DividirZip=1
+Tamañozip = 5

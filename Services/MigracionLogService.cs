@@ -9,8 +9,10 @@ namespace WindowsFormsApp1.Services
     public interface IMigracionLogService
     {
         List<int> ObtenerAniosCompletados(string nit, TipoMigracion tipo);
-        void RegistrarAnioCompletado(string nit, int anio, TipoMigracion tipo, int cantidadArchivos);
-        void ActualizarSubidoS3(string nit, int anio, TipoMigracion tipo, int cantidadArchivos, bool subidoS3, string respuesta);
+        List<(string año, string ruta)> ObtenerAniosErrorNotificar(string nit, TipoMigracion tipo);
+
+        void RegistrarAnioCompletado(string nit, int anio, TipoMigracion tipo, int cantidadArchivos, string rutaZip);
+        void ActualizarSubidoS3(string nit, int anio, TipoMigracion tipo, bool subidoS3, string respuesta, string ruta);
     }
 
     public class MigracionLogService : IMigracionLogService
@@ -33,7 +35,7 @@ namespace WindowsFormsApp1.Services
                     File.WriteAllLines(_rutaLog, new[]
                     {
                         "# Log de Migraciones Completadas",
-                        "# Formato: NIT|Año|Tipo|CantidadArchivos|Fecha|SubidoS3",
+                        "# Formato: NIT|Año|Tipo|CantidadArchivos|rutaLocal|SubidoS3|Fecha|respuestashttp|",
                         ""
                     });
                 }
@@ -68,21 +70,53 @@ namespace WindowsFormsApp1.Services
             return aniosCompletados;
         }
 
-        public void RegistrarAnioCompletado(string nit, int anio, TipoMigracion tipo, int cantidadArchivos)
+        public List<(string año, string ruta)> ObtenerAniosErrorNotificar(string nit, TipoMigracion tipo)
+        {
+            var anioSinNotificar = new List<(string año, string ruta)>();
+            if (!File.Exists(_rutaLog)) return anioSinNotificar;
+
+            try
+            {
+                lock (_lockObject)
+                {
+                    var tipoTexto = ObtenerTextoTipo(tipo);
+                    var lineas = File.ReadAllLines(_rutaLog);
+
+                    foreach (var linea in lineas.Where(l => !string.IsNullOrWhiteSpace(l) && !l.StartsWith("#")))
+                    {
+                        var partes = linea.Split('|');
+                        int anio = int.TryParse(partes[1]?.Trim(), out var x) ? x : 0;
+
+                        bool enviado = bool.TryParse(partes[5]?.Trim().ToLower(), out bool result) ? result : false;
+                        if (partes.Length >= 3 && partes[0] == nit && partes[2] == tipoTexto && !enviado)
+                        {
+                                string ruta = partes[4];
+                                anioSinNotificar.Add((anio.ToString(), ruta));
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            return anioSinNotificar;
+        }
+
+
+        public void RegistrarAnioCompletado(string nit, int anio, TipoMigracion tipo, int cantidadArchivos,string rutaZip)
         {
             try
             {
                 lock (_lockObject)
                 {
                     var linea = $"{nit}|{anio}|{ObtenerTextoTipo(tipo)}|{cantidadArchivos}|" +
-                               $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}|false";
+                               $"{rutaZip}|{false}|{DateTime.Now:yyyy-MM-dd HH:mm:ss}";
                     File.AppendAllText(_rutaLog, linea + Environment.NewLine);
                 }
             }
             catch { }
         }
 
-        public void ActualizarSubidoS3(string nit, int anio, TipoMigracion tipo, int cantidadArchivos, bool subidoS3, string respuesta)
+        public void ActualizarSubidoS3(string nit, int anio, TipoMigracion tipo, bool subidoS3, string respuesta, string ruta)
         {
             try
             {
@@ -90,15 +124,17 @@ namespace WindowsFormsApp1.Services
                 {
                     var tipoTexto = ObtenerTextoTipo(tipo);
                     var lineas = File.ReadAllLines(_rutaLog).ToList();
-
+                    
                     for (int i = lineas.Count - 1; i >= 0; i--)
                     {
-                        if (lineas[i].StartsWith($"{nit}|{anio}|{tipoTexto}|{cantidadArchivos}|"))
+                        var partes = lineas[i].Split('|');
+                        int cantidad_archivos =int.Parse(partes[3]);
+
+                        if (lineas[i].StartsWith($"{nit}|{anio}|{tipoTexto}|{cantidad_archivos}|{ruta}|"))
                         {
-                            var partes = lineas[i].Split('|');
                             if (partes.Length >= 5)
                             {
-                                lineas[i] = $"{partes[0]}|{partes[1]}|{partes[2]}|{partes[3]}|{partes[4]}|{subidoS3}|{respuesta}";
+                                lineas[i] = $"{partes[0]}|{partes[1]}|{partes[2]}|{partes[3]}|{partes[4]}|{subidoS3}|{partes[6]}|{respuesta}";
                                 break;
                             }
                         }

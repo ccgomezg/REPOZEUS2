@@ -15,8 +15,9 @@ namespace WindowsFormsApp1.Services
         Task<MigracionResult> EjecutarMigracionAsync(
             MigracionConfig config,
             IProgress<int> progreso,
-            TipoMigracion tMigracion,
-            string rutaCompleta);
+            TipoMigracion tipoMigracion,
+            string rutaCompleta,
+            bool ejecutar_sp);
 
 
     }
@@ -27,6 +28,7 @@ namespace WindowsFormsApp1.Services
         private readonly IFileService _fileService;
         private readonly IApiService _apiService;
         private readonly IMigracionLogService _logService;
+        private readonly IConfigService _configService;
 
         // Configuración de división
         private readonly bool _habilitarDivisionZip;
@@ -36,25 +38,33 @@ namespace WindowsFormsApp1.Services
             IDatabaseService databaseService,
             IFileService fileService,
             IApiService apiService,
+            IConfigService configService,
             IMigracionLogService logService = null,
             bool habilitarDivisionZip = true,
-            double maxZipSizeMB =50)
+            double maxZipSizeMB =0.1
+            )
         {
             _databaseService = databaseService;
             _fileService = fileService;
             _apiService = apiService;
             _logService = logService ?? new MigracionLogService();
             _habilitarDivisionZip = habilitarDivisionZip;
-            _maxZipSizeBytes = (long)(maxZipSizeMB * 1024 * 1024);
+            _maxZipSizeBytes = (long)(maxZipSizeMB);
+            _configService = configService;
         }
 
         public async Task<MigracionResult> EjecutarMigracionAsync(
             MigracionConfig config,
             IProgress<int> progreso,
             TipoMigracion tipoMigracion,
-            string rutaCompleta)
+            string rutaCompleta,
+            bool ejecutar_sp)
         {
+            string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.txt");
+            _configService.ActualizarConfiguracionExistente(configPath, ref config);
+
             ValidarParametros(config, tipoMigracion);
+            var cortesSinNotificar = new List<(string,string)>();
 
             var resultado = new MigracionResult
             {
@@ -76,15 +86,35 @@ namespace WindowsFormsApp1.Services
                     resultado.Exitoso = true;
                     resultado.FechaFin = DateTime.Now;
 
-                    if (tipoMigracion == TipoMigracion.Back && !config.DatabaseBack.SpEjecutado)
+                    cortesSinNotificar = ObtenerAniosPendientesNotificar(config, tipoMigracion, resultado);
+                    foreach (var (año, ruta) in cortesSinNotificar)
+                    {
+                        var fileName = Path.GetFileName(ruta);
+                        var httpAnswer = await _apiService.EnviarArchivoZipAsync(
+                            ruta, config.NIT, fileName, "1");
+
+                        if (httpAnswer.StatusCode == 200)
+                        {
+                            _logService.ActualizarSubidoS3(config.NIT, int.Parse(año), tipoMigracion, true, $"{httpAnswer.StatusCode} - {httpAnswer.Content}",ruta);
+
+                        }
+                        else
+                        {
+                            _logService.ActualizarSubidoS3(config.NIT, int.Parse(año), tipoMigracion, false, $"{httpAnswer.StatusCode} - {httpAnswer.Content}",ruta);
+                        }
+                    }
+
+                    if (tipoMigracion == TipoMigracion.Back && !config.DatabaseBack.SpEjecutado && ejecutar_sp)
                     {
                         int spEjecutado = await _databaseService.ConfigSp(config.DatabaseBack);
+                        _configService.ActualizarValorConfig(configPath, "SpBackEjecutado", "true");
 
 
                     }
-                    else if (tipoMigracion == TipoMigracion.Front && !config.DatabaseFront.SpEjecutado)
+                    else if (tipoMigracion == TipoMigracion.Front && !config.DatabaseFront.SpEjecutado && ejecutar_sp)
                     {
                         int spEjecutado = await _databaseService.ConfigSp(config.DatabaseFront);
+                        _configService.ActualizarValorConfig(configPath, "SpFrontEjecutado", "true");
                     }
 
                     return resultado;
@@ -98,16 +128,38 @@ namespace WindowsFormsApp1.Services
                 resultado.FechaFin = DateTime.Now;
                 resultado.Exitoso = true;
 
-
-                if(tipoMigracion == TipoMigracion.Back && !config.DatabaseBack.SpEjecutado && config.DatabaseBack.SpEjecutado == null )
+             
+                cortesSinNotificar = ObtenerAniosPendientesNotificar(config, tipoMigracion, resultado);
+                foreach (var (año, ruta) in cortesSinNotificar)
                 {
-                    int spEjecutado = await _databaseService.ConfigSp(config.DatabaseBack);
-                   
+                    var fileName = Path.GetFileName(ruta);
+                    var httpAnswer = await _apiService.EnviarArchivoZipAsync(
+                        ruta, config.NIT, fileName, "1");
+
+                    if (httpAnswer.StatusCode == 200)
+                    {
+                        _logService.ActualizarSubidoS3(config.NIT, int.Parse(año), tipoMigracion, true, $"{httpAnswer.StatusCode} - {httpAnswer.Content}", ruta);
+
+                    }
+                    else
+                    {
+                        _logService.ActualizarSubidoS3(config.NIT, int.Parse(año), tipoMigracion, false, $"{httpAnswer.StatusCode} - {httpAnswer.Content}", ruta);
+                    }
+
 
                 }
-                else if(tipoMigracion == TipoMigracion.Front && !config.DatabaseFront.SpEjecutado)
+
+                if (tipoMigracion == TipoMigracion.Back && !config.DatabaseBack.SpEjecutado && ejecutar_sp)
+                {
+                    int spEjecutado = await _databaseService.ConfigSp(config.DatabaseBack);
+                    _configService.ActualizarValorConfig(configPath, "SpFrontEjecutado", "true");
+
+
+                }
+                else if (tipoMigracion == TipoMigracion.Front && !config.DatabaseFront.SpEjecutado && ejecutar_sp)
                 {
                     int spEjecutado = await _databaseService.ConfigSp(config.DatabaseFront);
+                    _configService.ActualizarValorConfig(configPath, "SpBackEjecutado", "true");
                 }
 
 
@@ -157,6 +209,37 @@ namespace WindowsFormsApp1.Services
             return aniosPendientes;
         }
 
+        private List<(string año, string ruta)> ObtenerAniosPendientesNotificar(
+            MigracionConfig config,
+            TipoMigracion tipo,
+            MigracionResult resultado)
+        {
+            var aniosSeleccionados = config.TodosLosAnios
+                ? GenerarAniosDisponibles()
+                : config.AniosSeleccionados;
+
+            if (aniosSeleccionados == null || aniosSeleccionados.Length == 0)
+                throw new InvalidOperationException("No hay años seleccionados");
+           
+            var seleccionados = new HashSet<int>(aniosSeleccionados);
+
+            List<(string año, string ruta)> aniosErrorNotificar =
+                _logService.ObtenerAniosErrorNotificar(config.NIT, tipo);
+
+            var aniosSinNotificar = aniosErrorNotificar
+                .Where(t => int.TryParse(t.año, out var anio) && seleccionados.Contains(anio))
+                .ToList();  
+
+            if (aniosSinNotificar.Count > 0)  
+            {
+                resultado.MensajeRecuperacion =
+                    $"Procesando {aniosSinNotificar.Count} pendientes.";
+            }
+
+            return aniosSinNotificar;
+        }
+
+
         private async Task ProcesarAnios(
             MigracionConfig config,
             TipoMigracion tipoMigracion,
@@ -182,8 +265,11 @@ namespace WindowsFormsApp1.Services
                         continue;
 
                     // Dividir y enviar
+                    long tamanioZip = config.tamanioZip;
+                    bool dividirZip = config.DividirZip;
+
                     var archivosEnviados = await DividirYEnviarArchivos(
-                        archivoAnio, config.NIT, anio, tipoMigracion);
+                        archivoAnio, config.NIT, anio, tipoMigracion, dividirZip, tamanioZip);
 
                     totalGenerados += archivosEnviados.Count;
                     totalSubidos += archivosEnviados.Count(a => a.Item2);
@@ -215,12 +301,12 @@ namespace WindowsFormsApp1.Services
         }
 
         private async Task<List<(string archivo, bool subido)>> DividirYEnviarArchivos(
-            string rutaArchivo, string nit, int anio, TipoMigracion tipo)
+            string rutaArchivo, string nit, int anio, TipoMigracion tipo, bool _dividirzip, long tamanioZip)
         {
             var resultados = new List<(string, bool)>();
 
             // Dividir si es necesario
-            var archivos = _fileService.DividirZip(rutaArchivo, _maxZipSizeBytes, _habilitarDivisionZip);
+            var archivos = _fileService.DividirZip(rutaArchivo, tamanioZip, _dividirzip);
 
             foreach (var archivo in archivos)
             {
@@ -230,7 +316,7 @@ namespace WindowsFormsApp1.Services
                 try
                 {
                     // Registrar en log
-                    _logService.RegistrarAnioCompletado(nit, anio, tipo, archivos.Count);
+                    _logService.RegistrarAnioCompletado(nit, anio, tipo, archivos.Count,archivo);
 
                     // Enviar a API
                     var httpAnswer = await _apiService.EnviarArchivoZipAsync(
@@ -238,10 +324,10 @@ namespace WindowsFormsApp1.Services
 
                     if (httpAnswer.StatusCode == 200)
                     {
-                        _logService.ActualizarSubidoS3(nit, anio, tipo, archivos.Count, true, $"{httpAnswer.StatusCode} - {httpAnswer.Content}");
+                        _logService.ActualizarSubidoS3(nit, anio, tipo,  true, $"{httpAnswer.StatusCode} - {httpAnswer.Content}", archivo);
                         subidoExitosamente = true;
                     }
-                    _logService.ActualizarSubidoS3(nit, anio, tipo, archivos.Count, false, $"{httpAnswer.StatusCode} - {httpAnswer.Content}");
+                    _logService.ActualizarSubidoS3(nit, anio, tipo, false, $"{httpAnswer.StatusCode} - {httpAnswer.Content}", archivo);
 
                 }
                 catch (Exception ex)
@@ -251,7 +337,7 @@ namespace WindowsFormsApp1.Services
                         $"ERROR_ENVIO_{Path.GetFileNameWithoutExtension(archivo)}",
                         ex.Message,
                         true);
-                    _logService.ActualizarSubidoS3(nit, anio, tipo, archivos.Count, false, $"{ex}");
+                    _logService.ActualizarSubidoS3(nit, anio, tipo, false, $"{ex}", archivo);
 
                 }
 

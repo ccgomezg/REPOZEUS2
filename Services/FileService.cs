@@ -72,11 +72,6 @@ namespace WindowsFormsApp1.Services
                 var nombreSinExtension = Path.GetFileNameWithoutExtension(rutaArchivo);
                 var rutaZip = Path.Combine(directorioArchivo, $"{nombreSinExtension}.zip");
 
-                
-                
-                
-                
-                
                 //Eliminar ZIP existente si existe
                 if (File.Exists(rutaZip))
                     File.Delete(rutaZip);
@@ -93,8 +88,6 @@ namespace WindowsFormsApp1.Services
                 throw new Exception($"Error creando archivo ZIP: {ex.Message}", ex);
             }
         }
-
-
 
         public string CrearDirectorioMigracion(string rutaBase, string nit)
         {
@@ -117,97 +110,218 @@ namespace WindowsFormsApp1.Services
             File.WriteAllText(rutaCompleta, contenidoCompleto, Encoding.UTF8);
         }
 
+        // MÉTODO OPTIMIZADO: Divide en ZIPs con UN SOLO archivo TXT cada uno
         public List<string> DividirZip(
             string rutaZip,
             long maxSizeBytes,
             bool habilitarDivision = true)
         {
-            var archivosResultado = new List<string>();
-            var infoZip = new FileInfo(rutaZip);
-
-            // Si no está habilitada la división o el archivo es pequeño, devolver tal cual
-            if (!habilitarDivision || infoZip.Length <= maxSizeBytes)
+            // Caso simple: no dividir
+            if (!habilitarDivision || new FileInfo(rutaZip).Length <= maxSizeBytes)
             {
-                archivosResultado.Add(rutaZip);
-                return archivosResultado;
+                return new List<string> { rutaZip };
             }
 
-            // Dividir el ZIP
-            var directorio = Path.GetDirectoryName(rutaZip);
-            var nombreBase = Path.GetFileNameWithoutExtension(rutaZip);
-            var directorioTemporal = Path.Combine(directorio, $"temp_{Guid.NewGuid()}");
+            var archivosResultado = new List<string>();
+            var directorioTemporal = Path.Combine(
+                Path.GetDirectoryName(rutaZip),
+                $"temp_{Guid.NewGuid()}");
 
             try
             {
                 Directory.CreateDirectory(directorioTemporal);
+
+                // Extraer el ZIP original
                 ZipFile.ExtractToDirectory(rutaZip, directorioTemporal);
 
-                var archivosExtraidos = Directory.GetFiles(directorioTemporal, "*", SearchOption.AllDirectories)
-                    .Select(f => new { Ruta = f, Tamaño = new FileInfo(f).Length })
-                    .OrderBy(f => f.Tamaño)
-                    .ToList();
+                // Buscar el archivo TXT principal
+                var archivosTxt = Directory.GetFiles(directorioTemporal, "*.txt", SearchOption.AllDirectories);
 
-                var gruposArchivos = new List<List<string>>();
-                var grupoActual = new List<string>();
-                long tamañoActual = 0;
-
-                foreach (var archivo in archivosExtraidos)
+                if (archivosTxt.Length == 0)
                 {
-                    // Si agregar este archivo excede el límite, crear nuevo grupo
-                    if (tamañoActual > 0 && tamañoActual + archivo.Tamaño > maxSizeBytes)
-                    {
-                        gruposArchivos.Add(new List<string>(grupoActual));
-                        grupoActual.Clear();
-                        tamañoActual = 0;
-                    }
-
-                    grupoActual.Add(archivo.Ruta);
-                    tamañoActual += archivo.Tamaño;
+                    // No hay archivos TXT, devolver el original
+                    return new List<string> { rutaZip };
                 }
 
-                // Agregar último grupo
-                if (grupoActual.Count > 0)
-                {
-                    gruposArchivos.Add(grupoActual);
-                }
+                // Procesar el archivo TXT principal (asumiendo que hay uno solo o procesamos el primero)
+                var archivoTxtPrincipal = archivosTxt[0];
+                var nombreArchivoOriginal = Path.GetFileNameWithoutExtension(archivoTxtPrincipal);
 
-                // Crear un ZIP para cada grupo
-                for (int i = 0; i < gruposArchivos.Count; i++)
-                {
-                    var nombreZipParte = i == 0
-                        ? $"{nombreBase}.zip"
-                        : $"{nombreBase}_{i + 1}.zip";
+                // Dividir directamente en ZIPs
+                archivosResultado = CrearZipsConDivisionDirecta(
+                    archivoTxtPrincipal,
+                    rutaZip,
+                    maxSizeBytes);
 
-                    var rutaZipParte = Path.Combine(directorio, nombreZipParte);
-
-                    using (var zip = ZipFile.Open(rutaZipParte, ZipArchiveMode.Create))
-                    {
-                        foreach (var archivo in gruposArchivos[i])
-                        {
-                            var nombreArchivo = Path.GetFileName(archivo);
-                            zip.CreateEntryFromFile(archivo, nombreArchivo, CompressionLevel.Optimal);
-                        }
-                    }
-
-                    archivosResultado.Add(rutaZipParte);
-                }
-
-                // Eliminar ZIP original si se dividió
-                if (archivosResultado.Count > 1)
+                // Solo eliminar el original si se crearon nuevos archivos
+                if (archivosResultado.Count > 0)
                 {
                     File.Delete(rutaZip);
                 }
             }
+            catch (Exception ex)
+            {
+                // Si falla y no hay resultados, mantener el original
+                if (archivosResultado.Count == 0 && File.Exists(rutaZip))
+                {
+                    archivosResultado.Add(rutaZip);
+                }
+                throw new InvalidOperationException($"Error al dividir el archivo: {ex.Message}", ex);
+            }
             finally
             {
-                // Limpiar directorio temporal
+                // Limpieza del directorio temporal
                 if (Directory.Exists(directorioTemporal))
                 {
-                    Directory.Delete(directorioTemporal, true);
+                    try { Directory.Delete(directorioTemporal, true); } catch { }
                 }
             }
 
             return archivosResultado;
+        }
+
+        // Crear ZIPs dividiendo el contenido directamente
+        private List<string> CrearZipsConDivisionDirecta(
+            string archivoTxtOriginal,
+            string rutaZipOriginal,
+            long maxSizeBytes)
+        {
+            var archivosResultado = new List<string>();
+            var directorio = Path.GetDirectoryName(rutaZipOriginal);
+            var nombreBase = Path.GetFileNameWithoutExtension(rutaZipOriginal);
+            var nombreArchivoTxt = Path.GetFileName(archivoTxtOriginal);
+
+            // Calcular cuántas líneas aproximadamente caben en cada ZIP
+            // Considerando factor de compresión de ~15% para TXT
+            var maxBytesDescomprimido = (long)(maxSizeBytes / 0.15);
+
+            string encabezado = null;
+            int parteNumero = 1;
+
+            using (var lector = new StreamReader(archivoTxtOriginal, Encoding.UTF8))
+            {
+                // Leer encabezado
+                encabezado = lector.ReadLine();
+                if (string.IsNullOrEmpty(encabezado))
+                    return archivosResultado;
+
+                var lineasBuffer = new List<string>();
+                long bytesAcumulados = Encoding.UTF8.GetByteCount(encabezado + Environment.NewLine);
+                lineasBuffer.Add(encabezado);
+
+                string linea;
+                while ((linea = lector.ReadLine()) != null)
+                {
+                    var bytesLinea = Encoding.UTF8.GetByteCount(linea + Environment.NewLine);
+
+                    // Si agregar esta línea excede el límite, crear el ZIP con lo acumulado
+                    if (bytesAcumulados + bytesLinea > maxBytesDescomprimido && lineasBuffer.Count > 1)
+                    {
+                        // Crear ZIP con el buffer actual
+                        var rutaZipParte = CrearZipConContenido(
+                            directorio,
+                            nombreBase,
+                            nombreArchivoTxt,
+                            parteNumero++,
+                            lineasBuffer,
+                            maxSizeBytes);
+
+                        if (!string.IsNullOrEmpty(rutaZipParte))
+                        {
+                            archivosResultado.Add(rutaZipParte);
+                        }
+
+                        // Reiniciar buffer con encabezado
+                        lineasBuffer.Clear();
+                        lineasBuffer.Add(encabezado);
+                        bytesAcumulados = Encoding.UTF8.GetByteCount(encabezado + Environment.NewLine);
+                    }
+
+                    // Agregar línea al buffer
+                    lineasBuffer.Add(linea);
+                    bytesAcumulados += bytesLinea;
+                }
+
+                // Crear ZIP con las líneas restantes
+                if (lineasBuffer.Count > 1) // Más que solo el encabezado
+                {
+                    var rutaZipParte = CrearZipConContenido(
+                        directorio,
+                        nombreBase,
+                        nombreArchivoTxt,
+                        parteNumero,
+                        lineasBuffer,
+                        maxSizeBytes);
+
+                    if (!string.IsNullOrEmpty(rutaZipParte))
+                    {
+                        archivosResultado.Add(rutaZipParte);
+                    }
+                }
+            }
+
+            return archivosResultado;
+        }
+
+        // Crear un ZIP con el contenido especificado
+        private string CrearZipConContenido(
+            string directorio,
+            string nombreBase,
+            string nombreArchivoTxt,
+            int parteNumero,
+            List<string> lineas,
+            long maxSizeBytes)
+        {
+            var nombreZipParte = $"{nombreBase}_{parteNumero:D3}.zip";
+            var rutaZipParte = Path.Combine(directorio, nombreZipParte);
+            var rutaTxtTemporal = Path.Combine(directorio, $"temp_{Guid.NewGuid()}.txt");
+
+            try
+            {
+                // Escribir el archivo TXT temporal
+                File.WriteAllLines(rutaTxtTemporal, lineas, Encoding.UTF8);
+
+                // Crear el ZIP con el archivo temporal
+                using (var zip = ZipFile.Open(rutaZipParte, ZipArchiveMode.Create))
+                {
+                    // Mantener el nombre original del archivo dentro del ZIP
+                    zip.CreateEntryFromFile(rutaTxtTemporal, nombreArchivoTxt, CompressionLevel.Optimal);
+                }
+
+                // Verificar que el ZIP no exceda el límite
+                var tamañoZip = new FileInfo(rutaZipParte).Length;
+
+                if (tamañoZip > maxSizeBytes)
+                {
+                    // Si excede, necesitamos dividir más fino
+                    File.Delete(rutaZipParte);
+
+                    // Reducir el número de líneas y reintentar
+                    var lineasReducidas = lineas.Take(lineas.Count * 3 / 4).ToList();
+                    if (lineasReducidas.Count > 1)
+                    {
+                        return CrearZipConContenido(
+                            directorio,
+                            nombreBase,
+                            nombreArchivoTxt,
+                            parteNumero,
+                            lineasReducidas,
+                            maxSizeBytes);
+                    }
+
+                    return null;
+                }
+
+                return rutaZipParte;
+            }
+            finally
+            {
+                // Limpiar archivo temporal
+                if (File.Exists(rutaTxtTemporal))
+                {
+                    try { File.Delete(rutaTxtTemporal); } catch { }
+                }
+            }
         }
 
         private static string LimpiarTexto(string texto)
