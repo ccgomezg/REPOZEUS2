@@ -189,9 +189,9 @@ namespace WindowsFormsApp1
             this.lblNit.AutoSize = true;
             this.lblNit.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.lblNit.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
-            this.lblNit.Location = new System.Drawing.Point(23, 0);
+            this.lblNit.Location = new System.Drawing.Point(4, 8);
             this.lblNit.Name = "lblNit";
-            this.lblNit.Size = new System.Drawing.Size(179, 35);
+            this.lblNit.Size = new System.Drawing.Size(217, 19);
             this.lblNit.TabIndex = 0;
             this.lblNit.Text = "NIT (Sin dígito de verificación):";
             this.lblNit.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -202,9 +202,9 @@ namespace WindowsFormsApp1
             this.txtNit.BackColor = System.Drawing.Color.White;
             this.txtNit.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtNit.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.txtNit.Location = new System.Drawing.Point(228, 3);
+            this.txtNit.Location = new System.Drawing.Point(228, 5);
             this.txtNit.Name = "txtNit";
-            this.txtNit.Size = new System.Drawing.Size(224, 34);
+            this.txtNit.Size = new System.Drawing.Size(224, 25);
             this.txtNit.TabIndex = 1;
             // 
             // grpFront
@@ -237,14 +237,14 @@ namespace WindowsFormsApp1
             this.tableFront.Controls.Add(this.txtBaseDatosFront, 1, 3);
             this.tableFront.Controls.Add(this.txtIpFront, 0, 3);
             this.tableFront.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableFront.Location = new System.Drawing.Point(9, 36);
+            this.tableFront.Location = new System.Drawing.Point(9, 27);
             this.tableFront.Name = "tableFront";
             this.tableFront.RowCount = 4;
             this.tableFront.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 14F));
             this.tableFront.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 36F));
             this.tableFront.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 16F));
             this.tableFront.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 23F));
-            this.tableFront.Size = new System.Drawing.Size(391, 84);
+            this.tableFront.Size = new System.Drawing.Size(391, 93);
             this.tableFront.TabIndex = 0;
             // 
             // lblUsuarioFront
@@ -254,7 +254,7 @@ namespace WindowsFormsApp1
             this.lblUsuarioFront.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
             this.lblUsuarioFront.Location = new System.Drawing.Point(3, 0);
             this.lblUsuarioFront.Name = "lblUsuarioFront";
-            this.lblUsuarioFront.Size = new System.Drawing.Size(76, 14);
+            this.lblUsuarioFront.Size = new System.Drawing.Size(50, 14);
             this.lblUsuarioFront.TabIndex = 0;
             this.lblUsuarioFront.Text = "Usuario:";
             // 
@@ -265,7 +265,7 @@ namespace WindowsFormsApp1
             this.lblPasswordFront.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
             this.lblPasswordFront.Location = new System.Drawing.Point(198, 0);
             this.lblPasswordFront.Name = "lblPasswordFront";
-            this.lblPasswordFront.Size = new System.Drawing.Size(105, 14);
+            this.lblPasswordFront.Size = new System.Drawing.Size(70, 14);
             this.lblPasswordFront.TabIndex = 2;
             this.lblPasswordFront.Text = "Contraseña:";
             // 
@@ -275,10 +275,10 @@ namespace WindowsFormsApp1
             this.txtUsuarioFront.BackColor = System.Drawing.Color.White;
             this.txtUsuarioFront.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtUsuarioFront.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.txtUsuarioFront.Location = new System.Drawing.Point(3, 17);
+            this.txtUsuarioFront.Location = new System.Drawing.Point(3, 20);
             this.txtUsuarioFront.Margin = new System.Windows.Forms.Padding(3, 3, 7, 3);
             this.txtUsuarioFront.Name = "txtUsuarioFront";
-            this.txtUsuarioFront.Size = new System.Drawing.Size(185, 31);
+            this.txtUsuarioFront.Size = new System.Drawing.Size(185, 23);
             this.txtUsuarioFront.TabIndex = 1;
             // 
             // txtPasswordFront
@@ -287,9 +287,9 @@ namespace WindowsFormsApp1
             this.txtPasswordFront.BackColor = System.Drawing.Color.White;
             this.txtPasswordFront.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtPasswordFront.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.txtPasswordFront.Location = new System.Drawing.Point(198, 17);
+            this.txtPasswordFront.Location = new System.Drawing.Point(198, 20);
             this.txtPasswordFront.Name = "txtPasswordFront";
-            this.txtPasswordFront.Size = new System.Drawing.Size(190, 31);
+            this.txtPasswordFront.Size = new System.Drawing.Size(190, 23);
             this.txtPasswordFront.TabIndex = 3;
             this.txtPasswordFront.UseSystemPasswordChar = true;
             // 
@@ -300,7 +300,7 @@ namespace WindowsFormsApp1
             this.lblIpFront.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
             this.lblIpFront.Location = new System.Drawing.Point(3, 50);
             this.lblIpFront.Name = "lblIpFront";
-            this.lblIpFront.Size = new System.Drawing.Size(102, 16);
+            this.lblIpFront.Size = new System.Drawing.Size(66, 15);
             this.lblIpFront.TabIndex = 4;
             this.lblIpFront.Text = "IP Servidor:";
             // 
@@ -311,7 +311,7 @@ namespace WindowsFormsApp1
             this.lblBaseDatosFront.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
             this.lblBaseDatosFront.Location = new System.Drawing.Point(198, 50);
             this.lblBaseDatosFront.Name = "lblBaseDatosFront";
-            this.lblBaseDatosFront.Size = new System.Drawing.Size(175, 16);
+            this.lblBaseDatosFront.Size = new System.Drawing.Size(114, 15);
             this.lblBaseDatosFront.TabIndex = 6;
             this.lblBaseDatosFront.Text = "Nombre Base Datos:";
             // 
@@ -324,7 +324,7 @@ namespace WindowsFormsApp1
             this.txtBaseDatosFront.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.txtBaseDatosFront.Location = new System.Drawing.Point(198, 69);
             this.txtBaseDatosFront.Name = "txtBaseDatosFront";
-            this.txtBaseDatosFront.Size = new System.Drawing.Size(190, 31);
+            this.txtBaseDatosFront.Size = new System.Drawing.Size(190, 23);
             this.txtBaseDatosFront.TabIndex = 7;
             // 
             // txtIpFront
@@ -336,7 +336,7 @@ namespace WindowsFormsApp1
             this.txtIpFront.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.txtIpFront.Location = new System.Drawing.Point(3, 69);
             this.txtIpFront.Name = "txtIpFront";
-            this.txtIpFront.Size = new System.Drawing.Size(189, 31);
+            this.txtIpFront.Size = new System.Drawing.Size(189, 23);
             this.txtIpFront.TabIndex = 5;
             // 
             // grpBack
@@ -369,14 +369,14 @@ namespace WindowsFormsApp1
             this.tableBack.Controls.Add(this.lblBaseDatosBack, 1, 2);
             this.tableBack.Controls.Add(this.txtBaseDatosBack, 1, 3);
             this.tableBack.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableBack.Location = new System.Drawing.Point(9, 36);
+            this.tableBack.Location = new System.Drawing.Point(9, 27);
             this.tableBack.Name = "tableBack";
             this.tableBack.RowCount = 4;
             this.tableBack.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 13F));
             this.tableBack.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
             this.tableBack.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 19F));
             this.tableBack.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 13F));
-            this.tableBack.Size = new System.Drawing.Size(391, 84);
+            this.tableBack.Size = new System.Drawing.Size(391, 93);
             this.tableBack.TabIndex = 0;
             // 
             // lblUsuarioBack
@@ -386,7 +386,7 @@ namespace WindowsFormsApp1
             this.lblUsuarioBack.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
             this.lblUsuarioBack.Location = new System.Drawing.Point(3, 0);
             this.lblUsuarioBack.Name = "lblUsuarioBack";
-            this.lblUsuarioBack.Size = new System.Drawing.Size(76, 13);
+            this.lblUsuarioBack.Size = new System.Drawing.Size(50, 13);
             this.lblUsuarioBack.TabIndex = 0;
             this.lblUsuarioBack.Text = "Usuario:";
             // 
@@ -397,7 +397,7 @@ namespace WindowsFormsApp1
             this.lblIpBack.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
             this.lblIpBack.Location = new System.Drawing.Point(3, 48);
             this.lblIpBack.Name = "lblIpBack";
-            this.lblIpBack.Size = new System.Drawing.Size(102, 19);
+            this.lblIpBack.Size = new System.Drawing.Size(66, 15);
             this.lblIpBack.TabIndex = 4;
             this.lblIpBack.Text = "IP Servidor:";
             // 
@@ -410,7 +410,7 @@ namespace WindowsFormsApp1
             this.txtIpBack.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.txtIpBack.Location = new System.Drawing.Point(3, 70);
             this.txtIpBack.Name = "txtIpBack";
-            this.txtIpBack.Size = new System.Drawing.Size(189, 31);
+            this.txtIpBack.Size = new System.Drawing.Size(189, 23);
             this.txtIpBack.TabIndex = 5;
             // 
             // txtUsuarioBack
@@ -419,10 +419,10 @@ namespace WindowsFormsApp1
             this.txtUsuarioBack.BackColor = System.Drawing.Color.White;
             this.txtUsuarioBack.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtUsuarioBack.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.txtUsuarioBack.Location = new System.Drawing.Point(3, 16);
+            this.txtUsuarioBack.Location = new System.Drawing.Point(3, 19);
             this.txtUsuarioBack.Margin = new System.Windows.Forms.Padding(3, 3, 7, 3);
             this.txtUsuarioBack.Name = "txtUsuarioBack";
-            this.txtUsuarioBack.Size = new System.Drawing.Size(185, 31);
+            this.txtUsuarioBack.Size = new System.Drawing.Size(185, 23);
             this.txtUsuarioBack.TabIndex = 1;
             // 
             // txtPasswordBack
@@ -431,9 +431,9 @@ namespace WindowsFormsApp1
             this.txtPasswordBack.BackColor = System.Drawing.Color.White;
             this.txtPasswordBack.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtPasswordBack.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.txtPasswordBack.Location = new System.Drawing.Point(198, 16);
+            this.txtPasswordBack.Location = new System.Drawing.Point(198, 19);
             this.txtPasswordBack.Name = "txtPasswordBack";
-            this.txtPasswordBack.Size = new System.Drawing.Size(190, 31);
+            this.txtPasswordBack.Size = new System.Drawing.Size(190, 23);
             this.txtPasswordBack.TabIndex = 3;
             this.txtPasswordBack.UseSystemPasswordChar = true;
             // 
@@ -444,7 +444,7 @@ namespace WindowsFormsApp1
             this.lblPasswordBack.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
             this.lblPasswordBack.Location = new System.Drawing.Point(198, 0);
             this.lblPasswordBack.Name = "lblPasswordBack";
-            this.lblPasswordBack.Size = new System.Drawing.Size(105, 13);
+            this.lblPasswordBack.Size = new System.Drawing.Size(70, 13);
             this.lblPasswordBack.TabIndex = 2;
             this.lblPasswordBack.Text = "Contraseña:";
             // 
@@ -455,7 +455,7 @@ namespace WindowsFormsApp1
             this.lblBaseDatosBack.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
             this.lblBaseDatosBack.Location = new System.Drawing.Point(198, 48);
             this.lblBaseDatosBack.Name = "lblBaseDatosBack";
-            this.lblBaseDatosBack.Size = new System.Drawing.Size(175, 19);
+            this.lblBaseDatosBack.Size = new System.Drawing.Size(114, 15);
             this.lblBaseDatosBack.TabIndex = 6;
             this.lblBaseDatosBack.Text = "Nombre Base Datos:";
             // 
@@ -468,7 +468,7 @@ namespace WindowsFormsApp1
             this.txtBaseDatosBack.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.txtBaseDatosBack.Location = new System.Drawing.Point(198, 70);
             this.txtBaseDatosBack.Name = "txtBaseDatosBack";
-            this.txtBaseDatosBack.Size = new System.Drawing.Size(190, 31);
+            this.txtBaseDatosBack.Size = new System.Drawing.Size(190, 23);
             this.txtBaseDatosBack.TabIndex = 7;
             // 
             // grpRuta
@@ -494,11 +494,11 @@ namespace WindowsFormsApp1
             this.tableRuta.Controls.Add(this.btnBuscarRuta, 1, 0);
             this.tableRuta.Controls.Add(this.txtRutaDescarga, 0, 0);
             this.tableRuta.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableRuta.Location = new System.Drawing.Point(9, 36);
+            this.tableRuta.Location = new System.Drawing.Point(9, 27);
             this.tableRuta.Name = "tableRuta";
             this.tableRuta.RowCount = 1;
             this.tableRuta.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableRuta.Size = new System.Drawing.Size(395, 72);
+            this.tableRuta.Size = new System.Drawing.Size(395, 81);
             this.tableRuta.TabIndex = 0;
             // 
             // btnBuscarRuta
@@ -509,7 +509,7 @@ namespace WindowsFormsApp1
             this.btnBuscarRuta.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnBuscarRuta.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnBuscarRuta.ForeColor = System.Drawing.Color.White;
-            this.btnBuscarRuta.Location = new System.Drawing.Point(363, 26);
+            this.btnBuscarRuta.Location = new System.Drawing.Point(363, 30);
             this.btnBuscarRuta.Name = "btnBuscarRuta";
             this.btnBuscarRuta.Size = new System.Drawing.Size(29, 20);
             this.btnBuscarRuta.TabIndex = 1;
@@ -522,11 +522,11 @@ namespace WindowsFormsApp1
             this.txtRutaDescarga.BackColor = System.Drawing.Color.White;
             this.txtRutaDescarga.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtRutaDescarga.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.txtRutaDescarga.Location = new System.Drawing.Point(3, 20);
+            this.txtRutaDescarga.Location = new System.Drawing.Point(3, 29);
             this.txtRutaDescarga.Margin = new System.Windows.Forms.Padding(3, 3, 4, 3);
             this.txtRutaDescarga.Name = "txtRutaDescarga";
             this.txtRutaDescarga.ReadOnly = true;
-            this.txtRutaDescarga.Size = new System.Drawing.Size(353, 31);
+            this.txtRutaDescarga.Size = new System.Drawing.Size(353, 23);
             this.txtRutaDescarga.TabIndex = 0;
             // 
             // grpRdbtn
@@ -571,9 +571,9 @@ namespace WindowsFormsApp1
             this.rbMigrarAmbos.AutoSize = true;
             this.rbMigrarAmbos.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.rbMigrarAmbos.ForeColor = System.Drawing.Color.Black;
-            this.rbMigrarAmbos.Location = new System.Drawing.Point(223, 11);
+            this.rbMigrarAmbos.Location = new System.Drawing.Point(239, 16);
             this.rbMigrarAmbos.Name = "rbMigrarAmbos";
-            this.rbMigrarAmbos.Size = new System.Drawing.Size(100, 29);
+            this.rbMigrarAmbos.Size = new System.Drawing.Size(68, 19);
             this.rbMigrarAmbos.TabIndex = 5;
             this.rbMigrarAmbos.Text = "AMBOS";
             this.rbMigrarAmbos.UseVisualStyleBackColor = true;
@@ -584,9 +584,9 @@ namespace WindowsFormsApp1
             this.rbMigrarBack.AutoSize = true;
             this.rbMigrarBack.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.rbMigrarBack.ForeColor = System.Drawing.Color.Black;
-            this.rbMigrarBack.Location = new System.Drawing.Point(3, 11);
+            this.rbMigrarBack.Location = new System.Drawing.Point(20, 16);
             this.rbMigrarBack.Name = "rbMigrarBack";
-            this.rbMigrarBack.Size = new System.Drawing.Size(110, 29);
+            this.rbMigrarBack.Size = new System.Drawing.Size(76, 19);
             this.rbMigrarBack.TabIndex = 4;
             this.rbMigrarBack.Text = "BD BACK";
             this.rbMigrarBack.UseVisualStyleBackColor = true;
@@ -597,9 +597,9 @@ namespace WindowsFormsApp1
             this.rbMigrarFront.AutoSize = true;
             this.rbMigrarFront.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.rbMigrarFront.ForeColor = System.Drawing.Color.Black;
-            this.rbMigrarFront.Location = new System.Drawing.Point(119, 11);
+            this.rbMigrarFront.Location = new System.Drawing.Point(126, 16);
             this.rbMigrarFront.Name = "rbMigrarFront";
-            this.rbMigrarFront.Size = new System.Drawing.Size(98, 29);
+            this.rbMigrarFront.Size = new System.Drawing.Size(84, 19);
             this.rbMigrarFront.TabIndex = 3;
             this.rbMigrarFront.Text = "BD FRONT";
             this.rbMigrarFront.UseVisualStyleBackColor = true;
@@ -620,9 +620,9 @@ namespace WindowsFormsApp1
             this.checkBoxSp.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.checkBoxSp.AutoSize = true;
             this.checkBoxSp.ForeColor = System.Drawing.Color.Black;
-            this.checkBoxSp.Location = new System.Drawing.Point(157, 59);
+            this.checkBoxSp.Location = new System.Drawing.Point(160, 63);
             this.checkBoxSp.Name = "checkBoxSp";
-            this.checkBoxSp.Size = new System.Drawing.Size(22, 21);
+            this.checkBoxSp.Size = new System.Drawing.Size(15, 14);
             this.checkBoxSp.TabIndex = 7;
             this.checkBoxSp.UseVisualStyleBackColor = true;
             // 
@@ -654,7 +654,7 @@ namespace WindowsFormsApp1
             this.chkTodos.Location = new System.Drawing.Point(15, 64);
             this.chkTodos.Name = "chkTodos";
             this.chkTodos.Padding = new System.Windows.Forms.Padding(9, 4, 9, 4);
-            this.chkTodos.Size = new System.Drawing.Size(136, 37);
+            this.chkTodos.Size = new System.Drawing.Size(98, 27);
             this.chkTodos.TabIndex = 0;
             this.chkTodos.Text = "✓ TODOS";
             this.chkTodos.UseVisualStyleBackColor = false;
@@ -674,7 +674,7 @@ namespace WindowsFormsApp1
             this.lblTotalRegistros.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(152)))), ((int)(((byte)(219)))));
             this.lblTotalRegistros.Location = new System.Drawing.Point(143, 70);
             this.lblTotalRegistros.Name = "lblTotalRegistros";
-            this.lblTotalRegistros.Size = new System.Drawing.Size(251, 28);
+            this.lblTotalRegistros.Size = new System.Drawing.Size(178, 19);
             this.lblTotalRegistros.TabIndex = 7;
             this.lblTotalRegistros.Text = "📊 Total Registros Lapso:";
             // 
@@ -688,7 +688,7 @@ namespace WindowsFormsApp1
             this.txtTotalRegistros.Location = new System.Drawing.Point(323, 66);
             this.txtTotalRegistros.Name = "txtTotalRegistros";
             this.txtTotalRegistros.ReadOnly = true;
-            this.txtTotalRegistros.Size = new System.Drawing.Size(129, 34);
+            this.txtTotalRegistros.Size = new System.Drawing.Size(129, 25);
             this.txtTotalRegistros.TabIndex = 8;
             this.txtTotalRegistros.Text = "0 registros";
             this.txtTotalRegistros.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;

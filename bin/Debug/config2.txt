@@ -9,10 +9,10 @@ IpFront=zeusprudb01.siesacloud.com,49876
 BaseDatosFront=Paisar_Zeus_Prueba
 
 # Base de datos Back
-UsuarioBack=Cnktsde01
-PasswordBack=g1$98*W:/uBd3fLosm
-IpBack=10.10.22.25
-BaseDatosBack=claro_connekta_qa
+UsuarioBack=jcifuentes
+PasswordBack=62].MJ<6YDm*5WU1Z]p
+IpBack=zeusprudb01.siesacloud.com,49876
+BaseDatosBack=Paisar_Contabilidad_Prueba
 
 # Select Técnicos
 # SELECT_BACK={"modulo":"", "ldf":"","parametros_Adicionales":"", "fecha":"", "nombre_de_tabla_Sql":""}
@@ -30,4 +30,4 @@ DividirZip=1
 Tamañozip = 5
 
 #Ambiente (define en estorno donde se van a subir los zips de LDF 1->QA  0->REAL
-Ambiente=0
+Ambiente=1

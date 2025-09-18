@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Forms.Design;
 using WindowsFormsApp1.Helpers;
 using WindowsFormsApp1.Models;
 using WindowsFormsApp1.Services;
@@ -18,8 +20,11 @@ namespace WindowsFormsApp1
         private IDatabaseService _databaseService;
         private IMigracionService _migracionService;
         private IFileService _fileService;
+        private IMigracionLogService _migracionLogService;
+        private IApiService _apiService;
 
         private MigracionConfig _config;
+        private const string CONFIG_FILE = "config.txt";
         private CheckBox[] _checkboxAnios;
         private int[] _aniosDisponibles;
         #endregion
@@ -37,10 +42,11 @@ namespace WindowsFormsApp1
             _validationService = new ValidationService();
             _configService = new ConfigService();
             _databaseService = new DatabaseService();
+            _migracionLogService = new MigracionLogService();
 
             _fileService = new FileService();
-            var apiService = new ApiService(_fileService);
-            _migracionService = new MigracionService(_databaseService, _fileService, apiService, _configService);
+            _apiService = new ApiService(_fileService);
+            _migracionService = new MigracionService(_databaseService, _fileService, _apiService, _configService);
         }
 
         private void InicializarFormulario()
@@ -214,11 +220,8 @@ namespace WindowsFormsApp1
                     txtNit, txtRutaDescarga, txtUsuarioFront, txtPasswordFront, txtIpFront, txtBaseDatosFront,
                     txtUsuarioBack, txtPasswordBack, txtIpBack, txtBaseDatosBack);
 
-                //CargarConfiguracionInicial();
-
                 string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.txt");
                 _configService.GuardarConfiguracion(configPath, _config);
-
 
                 if (!ValidarYConfirmarMigracion())
                     return;
@@ -249,15 +252,12 @@ namespace WindowsFormsApp1
                 return false;
             }
 
-
-            // Mostrar advertencias si las hay
             if ((validacion?.Advertencias?.Length ?? 0) > 0)
             {
                 if (!UIHelper.ConfirmarAccion(validacion.ObtenerMensajeCompleto() + "\n\n¿Desea continuar?", "Advertencias"))
                     return false;
             }
 
-            // Confirmación final
             var resumen = FormHelper.GenerarResumenMigracion(_config);
             return UIHelper.ConfirmarAccion($"¿Confirma que desea proceder con la migración?\n\n{resumen}",
                 "Confirmar Migración");
@@ -266,6 +266,16 @@ namespace WindowsFormsApp1
         private async Task EjecutarMigracionAsync()
         {
             ConfigurarUIParaMigracion(true);
+            TipoMigracion tipo = ObtenerTipoMigracionSeleccionado();
+
+            var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, CONFIG_FILE);
+            _configService.ActualizarConfiguracionExistente(configPath, ref _config);
+            _apiService.CambiarAmbiente(_config.Ambiente);
+            
+
+            var ticketCreado = await  CreateTicket(_config,tipo);
+            string ruta = _fileService.CrearDirectorioMigracion(_config.RutaDescarga, _config.NIT);
+
 
             try
             {
@@ -274,9 +284,7 @@ namespace WindowsFormsApp1
                
                 MessageBoxIcon icono = MessageBoxIcon.Question;
 
-                string ruta = _fileService.CrearDirectorioMigracion(_config.RutaDescarga, _config.NIT);
 
-                TipoMigracion tipo = ObtenerTipoMigracionSeleccionado();
                 if(tipo == TipoMigracion.Ambos)
                 {
                     var resultadoBack = await _migracionService.EjecutarMigracionAsync(_config, progreso, TipoMigracion.Back, ruta,  checkBoxSp.Checked);
@@ -302,6 +310,7 @@ namespace WindowsFormsApp1
             finally
             {
                 ConfigurarUIParaMigracion(false);
+                EliminarDirectorioSiVacio(ruta);
             }
         }
 
@@ -334,6 +343,87 @@ namespace WindowsFormsApp1
         }
         #endregion
 
+        private async Task<(bool creado, string mensaje)> CreateTicket(MigracionConfig mconfig, TipoMigracion tipoMigracion)
+        {
+            try {
+                var aniosSeleccionados = ObtenerAniosSeleccionados(mconfig);
+                ValidarAniosSeleccionados(aniosSeleccionados);
+
+                int totalLdfBack = 0;
+                int totalLdfFront = 0;
+
+                string anioInicio = aniosSeleccionados.Min().ToString();
+                string anioFin = aniosSeleccionados.Max().ToString();
+
+                string fechaInicio = new DateTime(aniosSeleccionados.Min(), 1, 1).ToString("yyyy-MM-dd");
+                string fechaFin = new DateTime(aniosSeleccionados.Max(), 12, 31).ToString("yyyy-MM-dd");
+
+
+                if (tipoMigracion == TipoMigracion.Back || tipoMigracion == TipoMigracion.Ambos)
+                {
+                    var aniosCompletadosBack = _migracionLogService.ObtenerAniosCompletados(mconfig.NIT, TipoMigracion.Back);
+                    var aniosPendientesBack = aniosSeleccionados.Where(a => !aniosCompletadosBack.Contains(a));
+
+                    foreach (var anio in aniosPendientesBack)
+                        totalLdfBack += await _databaseService.ContarTransaccionesBackAsync(_config.DatabaseBack, anio);
+                }
+
+                if (tipoMigracion == TipoMigracion.Front || tipoMigracion == TipoMigracion.Ambos)
+                {
+                    var aniosCompletadosFront = _migracionLogService.ObtenerAniosCompletados(mconfig.NIT, TipoMigracion.Front);
+                    var aniosPendientesFront = aniosSeleccionados.Where(a => !aniosCompletadosFront.Contains(a));
+
+                    foreach (var anio in aniosPendientesFront)
+                        totalLdfFront += await _databaseService.ContarTransaccionesFrontAsync(_config.DatabaseFront, anio);
+                }
+
+                int totalldfs = totalLdfBack + totalLdfFront;
+                if (totalldfs > 0)
+                {
+                    string id_ticket = DateTime.Now.ToString("yyyyMMddHHmmss");
+                    string new_ticket = $"{mconfig.NIT}_{anioInicio}_{anioFin}_{id_ticket}";
+
+                    var respuesta = await _apiService.IniciarMigracionAsync(mconfig.NIT, new_ticket, totalldfs.ToString(), fechaInicio, fechaFin);
+                    var content = JObject.Parse(respuesta.Content);
+
+                    var Code = content["data"]["Code"].ToString();
+                    if (Code != "200")
+                    {
+                        UIHelper.MostrarError($"Error al crear Ticket: {content["data"]["message"]}");
+                    }
+
+                    _config.ticket = new_ticket;
+                    return (true, $"{respuesta.Content}");
+
+                }
+
+                UIHelper.MostrarError("No hay ldfs para hacer migración");
+                return (false, "No hay ldfs para hacer migración");
+            }
+            catch(Exception ex) {
+                UIHelper.MostrarError($"Error al crear ticket: {ex.Message}");
+                return (false, ex.Message);
+            }
+        }
+        private int[] ObtenerAniosSeleccionados(MigracionConfig config)
+        {
+            return config.TodosLosAnios ? GenerarAniosDisponibles() : config.AniosSeleccionados;
+        }
+
+        private static void ValidarAniosSeleccionados(int[] aniosSeleccionados)
+        {
+            if (aniosSeleccionados == null || aniosSeleccionados.Length == 0)
+                throw new InvalidOperationException("No hay años seleccionados");
+        }
+
+
+        private static int[] GenerarAniosDisponibles()
+        {
+            var anioActual = DateTime.Now.Year;
+            return Enumerable.Range(0, 9).Select(i => anioActual - i).ToArray();
+        }
+
+
         #region Métodos Auxiliares
         private TipoMigracion ObtenerTipoMigracionSeleccionado()
         {
@@ -341,6 +431,31 @@ namespace WindowsFormsApp1
             if (rbMigrarFront.Checked) return TipoMigracion.Front;
             if (rbMigrarBack.Checked) return TipoMigracion.Back;
             return TipoMigracion.NULL;
+        }
+
+        private void EliminarDirectorioSiVacio(string ruta)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(ruta))
+                    return;
+
+                if (Directory.Exists(ruta))
+                {
+                    var archivos = Directory.GetFiles(ruta);
+                    var subdirectorios = Directory.GetDirectories(ruta);
+
+                    if (archivos.Length == 0 && subdirectorios.Length == 0)
+                    {
+                        Directory.Delete(ruta);
+                        System.Diagnostics.Debug.WriteLine($"Directorio vacío eliminado: {ruta}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"No se pudo eliminar el directorio: {ex.Message}");
+            }
         }
         #endregion
 

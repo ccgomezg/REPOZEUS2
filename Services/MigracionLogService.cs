@@ -9,9 +9,9 @@ namespace WindowsFormsApp1.Services
     public interface IMigracionLogService
     {
         List<int> ObtenerAniosCompletados(string nit, TipoMigracion tipo);
-        List<(string año, string ruta)> ObtenerAniosErrorNotificar(string nit, TipoMigracion tipo);
+        List<(string año, string ruta, int CantidadLdf, string ticket)> ObtenerAniosErrorNotificar(string nit, TipoMigracion tipo, int CantidadLdf);
 
-        void RegistrarAnioCompletado(string nit, int anio, TipoMigracion tipo, int cantidadArchivos, string rutaZip);
+        void RegistrarAnioCompletado(string nit, int anio, TipoMigracion tipo, int cantidadArchivos, string rutaZip, string ticket );
         void ActualizarSubidoS3(string nit, int anio, TipoMigracion tipo, bool subidoS3, string respuesta, string ruta);
     }
 
@@ -35,7 +35,7 @@ namespace WindowsFormsApp1.Services
                     File.WriteAllLines(_rutaLog, new[]
                     {
                         "# Log de Migraciones Completadas",
-                        "# Formato: NIT|Año|Tipo|CantidadArchivos|rutaLocal|SubidoS3|Fecha|respuestashttp|",
+                        "# Formato: NIT|Año|Tipo|CantidadArchivos|rutaLocal|SubidoS3|Fecha|Ticket|respuestashttp|",
                         ""
                     });
                 }
@@ -70,9 +70,9 @@ namespace WindowsFormsApp1.Services
             return aniosCompletados;
         }
 
-        public List<(string año, string ruta)> ObtenerAniosErrorNotificar(string nit, TipoMigracion tipo)
+        public List<(string año, string ruta, int CantidadLdf,string ticket)> ObtenerAniosErrorNotificar(string nit, TipoMigracion tipo, int CantidadLdf)
         {
-            var anioSinNotificar = new List<(string año, string ruta)>();
+            var anioSinNotificar = new List<(string año, string ruta, int CantidadLdf, string ticket)>();
             if (!File.Exists(_rutaLog)) return anioSinNotificar;
 
             try
@@ -84,15 +84,24 @@ namespace WindowsFormsApp1.Services
 
                     foreach (var linea in lineas.Where(l => !string.IsNullOrWhiteSpace(l) && !l.StartsWith("#")))
                     {
-                        var partes = linea.Split('|');
-                        int anio = int.TryParse(partes[1]?.Trim(), out var x) ? x : 0;
+                        try {
+                            var partes = linea.Split('|');
+                            int anio = int.TryParse(partes[1]?.Trim(), out var x) ? x : 0;
 
-                        bool enviado = bool.TryParse(partes[5]?.Trim().ToLower(), out bool result) ? result : false;
-                        if (partes.Length >= 3 && partes[0] == nit && partes[2] == tipoTexto && !enviado)
-                        {
+                            bool enviado = bool.TryParse(partes[5]?.Trim().ToLower(), out bool result) ? result : false;
+                            if (partes.Length >= 3 && partes[0] == nit && partes[2] == tipoTexto && !enviado)
+                            {
                                 string ruta = partes[4];
-                                anioSinNotificar.Add((anio.ToString(), ruta));
+                                int totalLdfs = int.TryParse(partes[3], out int resultado) ? resultado : 0;
+                                anioSinNotificar.Add((anio.ToString(), ruta, totalLdfs, partes[7]));
+                            }
+
                         }
+                        catch {
+                            continue;
+                                }
+
+                        
                     }
                 }
             }
@@ -102,14 +111,14 @@ namespace WindowsFormsApp1.Services
         }
 
 
-        public void RegistrarAnioCompletado(string nit, int anio, TipoMigracion tipo, int cantidadArchivos,string rutaZip)
+        public void RegistrarAnioCompletado(string nit, int anio, TipoMigracion tipo, int cantidadArchivos,string rutaZip,string ticket)
         {
             try
             {
                 lock (_lockObject)
                 {
                     var linea = $"{nit}|{anio}|{ObtenerTextoTipo(tipo)}|{cantidadArchivos}|" +
-                               $"{rutaZip}|{false}|{DateTime.Now:yyyy-MM-dd HH:mm:ss}";
+                               $"{rutaZip}|{false}|{DateTime.Now:yyyy-MM-dd HH:mm:ss}|{ticket}";
                     File.AppendAllText(_rutaLog, linea + Environment.NewLine);
                 }
             }
@@ -124,7 +133,8 @@ namespace WindowsFormsApp1.Services
                 {
                     var tipoTexto = ObtenerTextoTipo(tipo);
                     var lineas = File.ReadAllLines(_rutaLog).ToList();
-                    
+                    var resPuestaLimpia = respuesta.Replace("\r\n", " ").Replace("\n", " ").Replace("\r", " ");
+
                     for (int i = lineas.Count - 1; i >= 0; i--)
                     {
                         var partes = lineas[i].Split('|');
@@ -134,7 +144,7 @@ namespace WindowsFormsApp1.Services
                         {
                             if (partes.Length >= 5)
                             {
-                                lineas[i] = $"{partes[0]}|{partes[1]}|{partes[2]}|{partes[3]}|{partes[4]}|{subidoS3}|{partes[6]}|{respuesta}";
+                                lineas[i] = $"{partes[0]}|{partes[1]}|{partes[2]}|{partes[3]}|{partes[4]}|{subidoS3}|{partes[6]}|{partes[7]}|{resPuestaLimpia}";
                                 break;
                             }
                         }

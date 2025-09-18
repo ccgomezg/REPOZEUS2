@@ -40,7 +40,7 @@ namespace WindowsFormsApp1.Services
 
                 using (var writer = new StreamWriter(rutaArchivo, false, Encoding.UTF8))
                 {
-                    writer.WriteLine("modulo|ldf|parametros|fecha");
+                    //writer.WriteLine("modulo|ldf|parametros|fecha");
 
                     foreach (var transaccion in ordenadas)
                     {
@@ -161,7 +161,7 @@ namespace WindowsFormsApp1.Services
             }
             catch (Exception ex)
             {
-                // Si falla y no hay resultados, mantener el original
+                
                 if (archivosResultado.Count == 0 && File.Exists(rutaZip))
                 {
                     archivosResultado.Add(rutaZip);
@@ -170,7 +170,7 @@ namespace WindowsFormsApp1.Services
             }
             finally
             {
-                // Limpieza del directorio temporal
+                
                 if (Directory.Exists(directorioTemporal))
                 {
                     try { Directory.Delete(directorioTemporal, true); } catch { }

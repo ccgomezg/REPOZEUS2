@@ -10,11 +10,14 @@ namespace WindowsFormsApp1.Models
         public int[] AniosSeleccionados { get; set; }
         public int TotalRegistrosEstimados { get; set; }
 
+        public string ticket { get; set; }
+
         public DatabaseConfig DatabaseFront { get; set; }
         public DatabaseConfig DatabaseBack { get; set; }
 
         public bool DividirZip { get; set; }
         public long tamanioZip { get; set; }
+        public int Ambiente { get; set; }
 
         public MigracionConfig()
         {

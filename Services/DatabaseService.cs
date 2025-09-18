@@ -16,7 +16,7 @@ namespace WindowsFormsApp1.Services
         Task ConsultarTransaccionesBackAsync(DatabaseConfig config, int anio, Func<TransaccionData, Task> onTransaccionProcesada);
         Task<int> ContarTransaccionesFrontAsync(DatabaseConfig config, int anio);
         Task<int> ContarTransaccionesBackAsync(DatabaseConfig config, int anio);
-        Task<int> ConfigSp(DatabaseConfig config);
+        Task<string> ConfigSp(DatabaseConfig config);
 
     }
 
@@ -392,23 +392,31 @@ namespace WindowsFormsApp1.Services
             }
         }
 
-        public async Task<int> ConfigSp(DatabaseConfig config)
+        public async Task<string> ConfigSp(DatabaseConfig config)
         {
-            if (config == null || !config.EstaCompleto() || config.SpName == null || config.SpName == "" )
-                throw new ArgumentException("Configuración de base de datos incompleta");
+            try {
+                if (config == null || !config.EstaCompleto() || config.SpName == null || config.SpName == "")
+                    throw new ArgumentException("Configuración de base de datos incompleta");
 
-            string nombreSp = config.SpName; 
+                string nombreSp = config.SpName;
 
-            using (var conn = new SqlConnection(config.GetConnectionString()))
-            using (var cmd = new SqlCommand(nombreSp, conn))
-            {
-                cmd.CommandType = CommandType.StoredProcedure;
-                cmd.CommandTimeout = CMD_TIMEOUT_SEC; 
+                using (var conn = new SqlConnection(config.GetConnectionString()))
+                using (var cmd = new SqlCommand(nombreSp, conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandTimeout = CMD_TIMEOUT_SEC;
 
-                await conn.OpenAsync().ConfigureAwait(false);
-                int filas = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
-                return filas;
+                    await conn.OpenAsync().ConfigureAwait(false);
+                    int filas = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+                    return "OK";
+                }
             }
+            catch(Exception ex) {
+
+
+                return ex.ToString();
+            }
+            
         }
     }
 }

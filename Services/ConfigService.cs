@@ -25,7 +25,7 @@ namespace WindowsFormsApp1.Services
         {
             "NIT", "RutaDescarga",
             "UsuarioFront", "PasswordFront", "IpFront", "BaseDatosFront",
-            "UsuarioBack", "PasswordBack", "IpBack", "BaseDatosBack","SpBackEjecutado","SpFrontEjecutado", "SpNameFront", "SpNameBack", "DividirZip","Tamañozip"
+            "UsuarioBack", "PasswordBack", "IpBack", "BaseDatosBack","SpBackEjecutado","SpFrontEjecutado", "SpNameFront", "SpNameBack", "DividirZip","Tamañozip","Ambiente"
         };
 
         public bool CargarConfiguracion(string rutaArchivo, out MigracionConfig config)
@@ -84,7 +84,10 @@ namespace WindowsFormsApp1.Services
             //4)zips tamaño y division
             string dividirZip = BuscarLineaConfigExistente(existentes, "DividirZip")  ?? "DividirZip=1";
             string tamañozip =  BuscarLineaConfigExistente(existentes, "Tamañozip") ?? "Tamañozip = 5";
- 
+
+            //ambiente 
+            string ambiente = BuscarLineaConfigExistente(existentes, "Ambiente") ?? "#Ambiente=1";
+
 
 
 
@@ -130,6 +133,11 @@ namespace WindowsFormsApp1.Services
                     writer.WriteLine("#DIVIDIR ZIP (DividirZip  -> 1 sirve para activar la division (0 para desactivar), TAMAÑO DEL ZIP -> ENTEROS ENTRE 1-5 QUE REPRESENTA MB)");
                     writer.WriteLine(dividirZip);
                     writer.WriteLine(tamañozip);
+
+                    writer.WriteLine();
+                    writer.WriteLine("#Ambiente (define en estorno donde se van a subir los zips de LDF 1->QA  0->REAL");
+                    writer.WriteLine(ambiente);
+
 
 
                 }
@@ -331,6 +339,10 @@ namespace WindowsFormsApp1.Services
                 config.DividirZip = (dividirZip == "1");
             if (propiedades.TryGetValue("Tamañozip", out var tamaniozip))
                 config.tamanioZip = long.TryParse(tamaniozip, out long n) && n >= 1 && n <= 35 ? n *1024 * 1024 : 5 * 1024 * 1024;
+            if (propiedades.TryGetValue("Ambiente", out var Ambiente))
+                config.Ambiente = int.TryParse(Ambiente, out int valorAmbiente) ? valorAmbiente : 0 ;
+
+
 
 
         }
