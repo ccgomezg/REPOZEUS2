@@ -1,2 +1,2 @@
 # Log de Migraciones Completadas
-# 900123456|2020|FRONT|112|E:\DV-CCGG\Zeus\Source\Repos\WindowsFormsApp1\WindowsFormsApp1\bin\Debug\MIGRACIONES\Migracion_900123456_20250917_142256\FR_900123456_2020_20250917142256.zip|False|2025-09-17 14:22:58|
+# Formato: NIT|Año|Tipo|CantidadArchivos|rutaLocal|SubidoS3|Fecha|Ticket|respuestashttp|

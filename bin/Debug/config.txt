@@ -15,7 +15,7 @@ IpBack=10.10.22.25
 BaseDatosBack=claro_connekta_qa
 
 # Select Técnicos
-# SELECT_BACK={"modulo":"", "ldf":"","parametros_Adicionales":"", "fecha":"", "nombre_de_tabla_Sql":""}
+SELECT_BACK={"modulo":"", "ldf":"","parametros_Adicionales":"", "fecha":"fecha_prueba", "nombre_de_tabla_Sql":""}
 # SELECT_FRONT={"modulo":"", "ldf":"","parametros_Adicionales":"", "fecha":"", "nombre_de_tabla_Sql":""}
 
 #Sp Config
@@ -30,4 +30,4 @@ DividirZip=1
 Tamañozip = 5
 
 #Ambiente (define en estorno donde se van a subir los zips de LDF 1->QA  0->REAL
-Ambiente=0
+Ambiente=1

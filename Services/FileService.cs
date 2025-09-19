@@ -182,40 +182,28 @@ namespace WindowsFormsApp1.Services
 
         // Crear ZIPs dividiendo el contenido directamente
         private List<string> CrearZipsConDivisionDirecta(
-            string archivoTxtOriginal,
-            string rutaZipOriginal,
-            long maxSizeBytes)
+    string archivoTxtOriginal,
+    string rutaZipOriginal,
+    long maxSizeBytes)
         {
             var archivosResultado = new List<string>();
             var directorio = Path.GetDirectoryName(rutaZipOriginal);
             var nombreBase = Path.GetFileNameWithoutExtension(rutaZipOriginal);
             var nombreArchivoTxt = Path.GetFileName(archivoTxtOriginal);
-
             // Calcular cuántas líneas aproximadamente caben en cada ZIP
             // Considerando factor de compresión de ~15% para TXT
             var maxBytesDescomprimido = (long)(maxSizeBytes / 0.15);
-
-            string encabezado = null;
             int parteNumero = 1;
-
             using (var lector = new StreamReader(archivoTxtOriginal, Encoding.UTF8))
             {
-                // Leer encabezado
-                encabezado = lector.ReadLine();
-                if (string.IsNullOrEmpty(encabezado))
-                    return archivosResultado;
-
                 var lineasBuffer = new List<string>();
-                long bytesAcumulados = Encoding.UTF8.GetByteCount(encabezado + Environment.NewLine);
-                lineasBuffer.Add(encabezado);
-
+                long bytesAcumulados = 0;
                 string linea;
                 while ((linea = lector.ReadLine()) != null)
                 {
                     var bytesLinea = Encoding.UTF8.GetByteCount(linea + Environment.NewLine);
-
                     // Si agregar esta línea excede el límite, crear el ZIP con lo acumulado
-                    if (bytesAcumulados + bytesLinea > maxBytesDescomprimido && lineasBuffer.Count > 1)
+                    if (bytesAcumulados + bytesLinea > maxBytesDescomprimido && lineasBuffer.Count > 0)
                     {
                         // Crear ZIP con el buffer actual
                         var rutaZipParte = CrearZipConContenido(
@@ -225,25 +213,20 @@ namespace WindowsFormsApp1.Services
                             parteNumero++,
                             lineasBuffer,
                             maxSizeBytes);
-
                         if (!string.IsNullOrEmpty(rutaZipParte))
                         {
                             archivosResultado.Add(rutaZipParte);
                         }
-
-                        // Reiniciar buffer con encabezado
+                        // Reiniciar buffer VACÍO (sin encabezado)
                         lineasBuffer.Clear();
-                        lineasBuffer.Add(encabezado);
-                        bytesAcumulados = Encoding.UTF8.GetByteCount(encabezado + Environment.NewLine);
+                        bytesAcumulados = 0;
                     }
-
                     // Agregar línea al buffer
                     lineasBuffer.Add(linea);
                     bytesAcumulados += bytesLinea;
                 }
-
                 // Crear ZIP con las líneas restantes
-                if (lineasBuffer.Count > 1) // Más que solo el encabezado
+                if (lineasBuffer.Count > 0)
                 {
                     var rutaZipParte = CrearZipConContenido(
                         directorio,
@@ -252,14 +235,12 @@ namespace WindowsFormsApp1.Services
                         parteNumero,
                         lineasBuffer,
                         maxSizeBytes);
-
                     if (!string.IsNullOrEmpty(rutaZipParte))
                     {
                         archivosResultado.Add(rutaZipParte);
                     }
                 }
             }
-
             return archivosResultado;
         }
 

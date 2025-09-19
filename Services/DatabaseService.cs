@@ -58,7 +58,7 @@ namespace WindowsFormsApp1.Services
             ldf = "Mensaje_respuesta_ds",
             parametros_Adicionales = "ParametrosAdiconles",
             fecha = "FechaHoraGrabacion",
-            nombre_de_la_tabla_Sql = "FacturaElectronica_Transaccion",
+            nombre_de_la_tabla_Sql = "FacturaElectronica_Transaccion" ,
             pk = null
         };
 
@@ -158,28 +158,43 @@ namespace WindowsFormsApp1.Services
         private string BuildSelectStreaming(ColumnMapping m)
         {
             var nolock = USE_NOLOCK ? " WITH (NOLOCK)" : "";
-
-       
             if (!string.IsNullOrWhiteSpace(m.pk))
             {
                 return $@"
-                    SELECT {m.modulo}, {m.ldf}, {m.parametros_Adicionales}, {m.fecha}, {m.pk}
-                    FROM {m.nombre_de_la_tabla_Sql}{nolock}
-                    WHERE Operacion = 'insert'
-                      AND Estado = 'ok'
-                      AND {m.fecha} >= @ini AND {m.fecha} < @fin
-                    OPTION (FAST 1000);";
+                        SELECT {m.modulo}, 
+                                CASE 
+                                    WHEN LEN(mensaje_contenido_Tecnico_ds) > 0 AND LEN(mensaje_contenido_Tecnico_ds) < 90 THEN mensaje_contenido_Tecnico_ds 
+                                    WHEN LEN({m.ldf}) > 0 AND LEN({m.ldf}) < 90 THEN {m.ldf}
+                                    ELSE NULL 
+                                END AS ldf,
+                                {m.parametros_Adicionales}, 
+                                {m.fecha}, 
+                                {m.pk}
+                        FROM {m.nombre_de_la_tabla_Sql}{nolock}
+                        WHERE Operacion = 'insert'
+                            AND Estado = 'ok'
+                            AND {m.fecha} >= @ini AND {m.fecha} < @fin
+                        OPTION (FAST 1000);";
             }
             else
             {
                 return $@"
-                    SELECT {m.modulo}, {m.ldf}, {m.parametros_Adicionales}, {m.fecha}
-                    FROM {m.nombre_de_la_tabla_Sql}{nolock}
-                    WHERE Operacion = 'insert'
-                      AND Estado = 'ok'
-                      AND {m.fecha} >= @ini AND {m.fecha} < @fin
-                    OPTION (FAST 1000);";
+                        SELECT {m.modulo}, 
+                               CASE 
+                                   WHEN LEN(mensaje_contenido_Tecnico_ds) > 0 AND LEN(mensaje_contenido_Tecnico_ds) < 90 THEN mensaje_contenido_Tecnico_ds 
+                                   WHEN LEN({m.ldf}) > 0 AND LEN({m.ldf}) < 90 THEN {m.ldf}
+                                   ELSE NULL 
+                               END AS ldf,
+                               {m.parametros_Adicionales}, 
+                               {m.fecha}
+                        FROM {m.nombre_de_la_tabla_Sql}{nolock}
+                        WHERE Operacion = 'insert'
+                          AND Estado = 'ok'
+                          AND {m.fecha} >= @ini AND {m.fecha} < @fin
+                        OPTION (FAST 1000);";
             }
+
+
         }
 
         private string BuildCount(ColumnMapping m) => $@"
